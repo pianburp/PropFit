@@ -1,17 +1,29 @@
+"use client";
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { InteractiveGridPattern } from "@/components/ui/interactive-grid-pattern";
+import { cn } from "@/lib/utils";
 
 export function Hero() {
     return (
-        <section className="relative pt-20 pb-32 overflow-hidden">
-            <div className="container px-4 md:px-6">
+        <section className="relative min-h-[80vh] h-auto pt-20 pb-32 overflow-hidden">
+            <InteractiveGridPattern
+                className={cn(
+                    "[mask-image:radial-gradient(600px_circle_at_center,white,transparent)]"
+                )}
+                width={60}
+                height={60}
+                squares={[40, 20]}
+                squaresClassName="hover:fill-blue-500"
+            />
+            <div className="container px-4 md:px-6 relative z-10">
                 <div className="flex flex-col items-center text-center space-y-8">
                     <div className="p-1 px-3 bg-muted rounded-full text-sm font-medium text-muted-foreground mb-4">
                         🎉 New: Advanced Financial Pre-qualification
                     </div>
-                    <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter max-w-3xl">
+                    <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight max-w-3xl">
                         Stop Wasting Time on <span className="text-primary">Unqualified</span> Leads
                     </h1>
                     <p className="text-xl text-muted-foreground max-w-[700px]">
@@ -42,11 +54,6 @@ export function Hero() {
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {/* Background decoration */}
-            <div className="absolute top-0 -z-10 h-full w-full bg-white dark:bg-black">
-                <div className="absolute bottom-auto left-auto right-0 top-0 h-[500px] w-[500px] -translate-x-[30%] translate-y-[20%] rounded-full bg-[rgba(173,109,244,0.5)] opacity-20 blur-[80px]"></div>
             </div>
         </section>
     );

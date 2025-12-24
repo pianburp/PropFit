@@ -18,10 +18,10 @@ export function Pricing() {
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-16">
                     <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
-                        Simple Pricing. No Long Contracts.
+                        One Upgrade Pays for a Year
                     </h2>
                     <p className="max-w-[700px] text-muted-foreground md:text-xl">
-                        Start closing more deals today. If it helps you close just one extra deal, it pays for itself.
+                        Close one extra upgrade deal and PropFit pays for itself. No hidden fees, no per-deal commissions.
                     </p>
                 </div>
 
@@ -31,10 +31,10 @@ export function Pricing() {
                         title="Free Trial"
                         price="RM 0"
                         period="/ 14 days"
-                        description="Test the value before you commit."
+                        description="See the value before you commit."
                         features={[
                             "Full access to all features",
-                            "Limit to 50 leads",
+                            "Up to 10 clients",
                             "No credit card required",
                             "Instant setup"
                         ]}
@@ -43,65 +43,69 @@ export function Pricing() {
                         href="/auth/sign-up"
                     />
 
-                    {/* Founding Agent - Highlighted */}
+                    {/* Solo Agent - Highlighted */}
                     <PricingCard
-                        title="Founding Agent"
-                        price="RM 29"
-                        period="/ agent / month"
-                        description="Limited to first 30 agents only."
+                        title="Solo Agent"
+                        price="RM 99"
+                        period="/ month"
+                        description="For serious agents who close upgrades."
                         features={[
-                            "Everything in Free Trial",
-                            "Unlimited leads",
-                            "Lifetime price lock",
-                            "Priority support",
-                            "Early access to new features"
-                        ]}
-                        buttonText="Claim Offer"
-                        buttonVariant="default"
-                        popular={true}
-                        href="/auth/sign-up?plan=founding"
-                        badge="Best Value"
-                    />
-
-                    {/* Core MVP */}
-                    <PricingCard
-                        title="Core MVP"
-                        price="RM 49"
-                        period="/ agent / month"
-                        description="For the serious agent."
-                        features={[
-                            "Unlimited leads",
-                            "Lead qualification scoring",
-                            "Location affordability",
-                            "Financing readiness",
-                            "Upgrade alerts"
+                            "Upgrade readiness detection",
+                            "Conservative affordability calculator",
+                            "Upgrade pipeline tracking",
+                            "One-page client summary",
+                            "\"Why Now?\" justification builder",
+                            "Full client ownership & history"
                         ]}
                         buttonText="Get Started"
-                        buttonVariant="secondary"
-                        href="/auth/sign-up?plan=core"
+                        buttonVariant="default"
+                        popular={true}
+                        href="/auth/sign-up?plan=solo"
+                        badge="Most Popular"
                     />
 
-                    {/* Small Agency */}
+                    {/* Team / Small Agency */}
                     <PricingCard
-                        title="Small Agency"
-                        price="RM 199"
+                        title="Team"
+                        price="RM 299"
                         period="/ month"
-                        description="For teams of up to 5 agents."
+                        description="For agencies with up to 5 agents."
                         features={[
+                            "Everything in Solo Agent",
                             "Up to 5 agent seats",
-                            "Centralized admin view",
-                            "Shared lead rules",
-                            "Team performance tracking",
-                            "Consolidated billing"
+                            "Team visibility dashboard",
+                            "Client reassignment",
+                            "Upgrade conversion tracking",
+                            "SOP consistency for juniors"
                         ]}
-                        buttonText="Contact Sales"
+                        buttonText="Start Team Plan"
+                        buttonVariant="secondary"
+                        href="/auth/sign-up?plan=team"
+                    />
+
+                    {/* Larger Agency */}
+                    <PricingCard
+                        title="Agency"
+                        price="RM 79"
+                        period="/ agent / month"
+                        description="For teams of 6+ agents."
+                        features={[
+                            "Everything in Team",
+                            "Unlimited agent seats",
+                            "Readiness heatmap dashboard",
+                            "Standardised upgrade playbooks",
+                            "Performance comparison",
+                            "Audit logs & principal visibility"
+                        ]}
+                        buttonText="Contact Us"
                         buttonVariant="outline"
-                        href="mailto:sales@propfit.com"
+                        href="mailto:hello@propfit.my"
                     />
                 </div>
 
-                <div className="mt-12 text-center text-sm text-muted-foreground">
-                    <p>Prices in MYR. Cancel anytime. No hidden fees.</p>
+                <div className="mt-12 text-center text-sm text-muted-foreground space-y-2">
+                    <p>Flat monthly subscription. No commission fees. Cancel anytime.</p>
+                    <p className="text-xs">Prices in MYR. All plans include email support.</p>
                 </div>
             </div>
         </section>

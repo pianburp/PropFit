@@ -89,6 +89,69 @@ export const FINANCING_READINESS_COLORS: Record<FinancingReadiness, string> = {
 // Subscription Status
 export type SubscriptionStatus = 'trial' | 'active' | 'expired' | 'cancelled';
 
+// Agent Role Options (B2B)
+export type AgentRole = 'admin' | 'agent';
+
+export const AGENT_ROLE_LABELS: Record<AgentRole, string> = {
+  admin: 'Admin',
+  agent: 'Agent',
+};
+
+// Upgrade Pipeline Stage Options
+export type UpgradeStage = 'monitoring' | 'window_open' | 'planning' | 'executed' | 'lost';
+
+export const UPGRADE_STAGE_LABELS: Record<UpgradeStage, string> = {
+  monitoring: 'Monitoring',
+  window_open: 'Window Open',
+  planning: 'Planning',
+  executed: 'Executed',
+  lost: 'Lost',
+};
+
+export const UPGRADE_STAGE_COLORS: Record<UpgradeStage, string> = {
+  monitoring: 'bg-slate-100 text-slate-800',
+  window_open: 'bg-blue-100 text-blue-800',
+  planning: 'bg-amber-100 text-amber-800',
+  executed: 'bg-green-100 text-green-800',
+  lost: 'bg-red-100 text-red-800',
+};
+
+export const UPGRADE_STAGE_ORDER: UpgradeStage[] = [
+  'monitoring',
+  'window_open',
+  'planning',
+  'executed',
+  'lost',
+];
+
+// Upgrade Readiness State (deterministic)
+export type UpgradeReadinessState = 'not_ready' | 'monitoring' | 'ready';
+
+export const UPGRADE_READINESS_LABELS: Record<UpgradeReadinessState, string> = {
+  not_ready: 'Not Ready',
+  monitoring: 'Monitoring',
+  ready: 'Ready',
+};
+
+export const UPGRADE_READINESS_COLORS: Record<UpgradeReadinessState, string> = {
+  not_ready: 'bg-red-100 text-red-800',
+  monitoring: 'bg-yellow-100 text-yellow-800',
+  ready: 'bg-green-100 text-green-800',
+};
+
+// Life Milestone Types
+export type LifeMilestoneType = 'marriage' | 'child' | 'promotion' | 'job_change' | 'inheritance' | 'bonus' | 'other';
+
+export const LIFE_MILESTONE_LABELS: Record<LifeMilestoneType, string> = {
+  marriage: 'Marriage',
+  child: 'Child/Family',
+  promotion: 'Promotion',
+  job_change: 'Job Change',
+  inheritance: 'Inheritance',
+  bonus: 'Bonus/Windfall',
+  other: 'Other',
+};
+
 // Lead Event Types
 export type LeadEventType =
   | 'created'
@@ -101,7 +164,10 @@ export type LeadEventType =
   | 'viewing_scheduled'
   | 'note_added'
   | 'upgrade_triggered'
-  | 'qualification_recalculated';
+  | 'qualification_recalculated'
+  | 'upgrade_stage_changed'
+  | 'financial_snapshot_updated'
+  | 'client_reassigned';
 
 // Upgrade Alert Types
 export type UpgradeAlertType =
@@ -109,11 +175,151 @@ export type UpgradeAlertType =
   | 'lead_matured'
   | 'lease_ending'
   | 'higher_tier_interest'
-  | 'rent_to_buy_ready';
+  | 'rent_to_buy_ready'
+  | 'readiness_state_changed';
+
+// ============================================
+// Upgrade Features Types (NEW)
+// ============================================
+
+// Conversation Timeline Step
+export type ConversationStep = 
+  | 'financial_validation' 
+  | 'soft_discussion' 
+  | 'family_alignment' 
+  | 'property_matching' 
+  | 'execution';
+
+export const CONVERSATION_STEP_LABELS: Record<ConversationStep, string> = {
+  financial_validation: 'Financial Validation',
+  soft_discussion: 'Soft Upgrade Discussion',
+  family_alignment: 'Family Alignment',
+  property_matching: 'Property Matching',
+  execution: 'Execution',
+};
+
+export const CONVERSATION_STEP_ORDER: ConversationStep[] = [
+  'financial_validation',
+  'soft_discussion',
+  'family_alignment',
+  'property_matching',
+  'execution',
+];
+
+export interface ConversationStepData {
+  completed: boolean;
+  completed_at?: string;
+  notes?: string;
+}
+
+export interface ConversationTimeline {
+  financial_validation: ConversationStepData;
+  soft_discussion: ConversationStepData;
+  family_alignment: ConversationStepData;
+  property_matching: ConversationStepData;
+  execution: ConversationStepData;
+}
+
+// Fallback Planner Types
+export type FallbackReason = 
+  | 'not_ready_financially' 
+  | 'family_objection' 
+  | 'timing_not_right' 
+  | 'waiting_for_milestone' 
+  | 'client_declined' 
+  | 'other';
+
+export const FALLBACK_REASON_LABELS: Record<FallbackReason, string> = {
+  not_ready_financially: 'Not Ready Financially',
+  family_objection: 'Family Objection',
+  timing_not_right: 'Timing Not Right',
+  waiting_for_milestone: 'Waiting for Milestone',
+  client_declined: 'Client Declined',
+  other: 'Other',
+};
+
+export interface FallbackPlan {
+  reason: FallbackReason;
+  reason_notes?: string;
+  next_review_date: string;
+  advisory_notes?: string;
+  created_at: string;
+}
+
+// Objection Category Types
+export type ObjectionCategory = 
+  | 'spouse_concern' 
+  | 'parent_advice' 
+  | 'commitment_fear' 
+  | 'timing_uncertainty';
+
+export const OBJECTION_CATEGORY_LABELS: Record<ObjectionCategory, string> = {
+  spouse_concern: 'Spouse Concern',
+  parent_advice: 'Parent Advice',
+  commitment_fear: 'Commitment Fear',
+  timing_uncertainty: 'Timing Uncertainty',
+};
+
+// Deal Risk Flag Types
+export type DealRiskType = 
+  | 'tight_margin' 
+  | 'optimistic_equity' 
+  | 'short_tenure' 
+  | 'rate_sensitive';
+
+export const DEAL_RISK_LABELS: Record<DealRiskType, string> = {
+  tight_margin: 'Tight Affordability Margin',
+  optimistic_equity: 'Optimistic Equity Assumptions',
+  short_tenure: 'Short Job Tenure',
+  rate_sensitive: 'High Rate Sensitivity',
+};
+
+export interface DealRiskFlag {
+  type: DealRiskType;
+  reason: string;
+  details: string;
+}
 
 // ============================================
 // Database Table Types
 // ============================================
+
+export interface Agency {
+  id: string;
+  name: string;
+  is_personal: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Income History Entry
+export interface IncomeHistoryEntry {
+  amount: number;
+  date: string;
+  notes?: string;
+}
+
+// Life Milestone Entry
+export interface LifeMilestone {
+  type: LifeMilestoneType;
+  date: string;
+  notes?: string;
+}
+
+// Upgrade Readiness Breakdown (for UI explanation)
+export interface UpgradeReadinessBreakdown {
+  income_growth_score: number;
+  income_growth_reason: string;
+  equity_score: number;
+  equity_reason: string;
+  debt_score: number;
+  debt_reason: string;
+  employment_score: number;
+  employment_reason: string;
+  rejection_score: number;
+  rejection_reason: string;
+  total_score: number;
+}
 
 export interface Agent {
   id: string;
@@ -124,6 +330,10 @@ export interface Agent {
   preferred_cities: City[];
   subscription_status: SubscriptionStatus;
   subscription_ends_at?: string;
+  // B2B fields
+  agency_id?: string;
+  role: AgentRole;
+  agency?: Agency; // Joined
   created_at: string;
   updated_at: string;
 }
@@ -167,6 +377,29 @@ export interface Lead {
   status: LeadStatus;
   is_upgrade_ready: boolean;
   upgrade_triggers: UpgradeTrigger[];
+  
+  // Financial Snapshot (new)
+  current_income?: number;
+  income_last_updated?: string;
+  income_history: IncomeHistoryEntry[];
+  current_property_value?: number;
+  property_value_last_updated?: string;
+  outstanding_loan_balance?: number;
+  loan_balance_last_updated?: string;
+  life_milestones: LifeMilestone[];
+  
+  // Upgrade Pipeline (new)
+  upgrade_stage: UpgradeStage;
+  upgrade_stage_changed_at: string;
+  upgrade_readiness_score: number;
+  upgrade_readiness_state: UpgradeReadinessState;
+  upgrade_readiness_breakdown: UpgradeReadinessBreakdown;
+  
+  // Conversation Timeline (upgrade features)
+  conversation_timeline?: ConversationTimeline;
+  
+  // Fallback Plan (if upgrade not proceeding)
+  fallback_plan?: FallbackPlan;
   
   // Timestamps
   created_at: string;

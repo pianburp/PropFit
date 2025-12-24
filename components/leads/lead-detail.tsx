@@ -39,6 +39,13 @@ import {
 } from '@/lib/types';
 import { formatRM, formatRMFull } from '@/lib/qualification-engine';
 import { getAreaLabel } from '@/lib/areas';
+// New upgrade feature components
+import { WhyNowPanel } from '@/components/upgrade/why-now-panel';
+import { ObjectionMapper } from '@/components/upgrade/objection-mapper';
+import { ConversationTimeline } from '@/components/upgrade/conversation-timeline';
+import { DealRiskFlags } from '@/components/upgrade/deal-risk-flags';
+import { ReadinessHistory } from '@/components/upgrade/readiness-history';
+import { FallbackPlanner } from '@/components/upgrade/fallback-planner';
 import {
   Phone,
   Mail,
@@ -81,7 +88,7 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
 
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this lead?')) return;
-    
+
     setDeleting(true);
     try {
       await deleteLead(lead.id);
@@ -214,6 +221,7 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
         <TabsList>
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="analysis">Analysis</TabsTrigger>
+          <TabsTrigger value="upgrade-tools">Upgrade Tools</TabsTrigger>
           <TabsTrigger value="suggestions">Suggestions</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
         </TabsList>
@@ -363,13 +371,12 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
                   {lead.suggested_areas.map((suggestion, index) => (
                     <div
                       key={index}
-                      className={`p-4 rounded-lg border ${
-                        suggestion.fit === 'perfect'
-                          ? 'bg-green-50 border-green-200'
-                          : suggestion.fit === 'stretch'
+                      className={`p-4 rounded-lg border ${suggestion.fit === 'perfect'
+                        ? 'bg-green-50 border-green-200'
+                        : suggestion.fit === 'stretch'
                           ? 'bg-yellow-50 border-yellow-200'
                           : 'bg-blue-50 border-blue-200'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-start justify-between">
                         <div>
@@ -382,8 +389,8 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
                             suggestion.fit === 'perfect'
                               ? 'bg-green-100 text-green-800'
                               : suggestion.fit === 'stretch'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-blue-100 text-blue-800'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-blue-100 text-blue-800'
                           }
                         >
                           {suggestion.fit === 'perfect' && '✓ Perfect'}
@@ -464,6 +471,36 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Upgrade Tools Tab */}
+        <TabsContent value="upgrade-tools" className="space-y-6">
+          {/* Top Row: Why Now + Deal Risk Flags */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <WhyNowPanel lead={lead} />
+            <DealRiskFlags lead={lead} />
+          </div>
+
+          {/* Conversation Timeline */}
+          <ConversationTimeline lead={lead} />
+
+          {/* Bottom Row: Objection Mapper + Readiness History */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ObjectionMapper />
+            <ReadinessHistory lead={lead} events={events} />
+          </div>
+
+          {/* Fallback Planner */}
+          <FallbackPlanner lead={lead} />
+
+          {/* Link to WhatsApp Summary */}
+          <div className="flex justify-center pt-4">
+            <Button variant="outline" asChild>
+              <Link href={`/protected/leads/${lead.id}/summary`}>
+                📱 View WhatsApp-Ready Summary
+              </Link>
+            </Button>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

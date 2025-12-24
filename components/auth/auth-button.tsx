@@ -1,7 +1,5 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
-import { LogoutButton } from "./logout-button";
+import { SidebarAuthButton } from "./sidebar-auth-button";
 
 export async function AuthButton() {
   const supabase = await createClient();
@@ -9,23 +7,7 @@ export async function AuthButton() {
   // You can also use getUser() which will be slower.
   const { data } = await supabase.auth.getClaims();
 
-  const user = data?.claims;
+  const isLoggedIn = !!data?.claims;
 
-  return user ? (
-    <div className="flex items-center gap-4">
-      <Button asChild size="sm" variant="ghost">
-        <Link href="/protected">Dashboard</Link>
-      </Button>
-      <LogoutButton />
-    </div>
-  ) : (
-    <div className="flex gap-2">
-      <Button asChild size="sm" variant={"outline"}>
-        <Link href="/auth/login">Sign in</Link>
-      </Button>
-      <Button asChild size="sm" variant={"default"}>
-        <Link href="/auth/sign-up">Sign up</Link>
-      </Button>
-    </div>
-  );
+  return <SidebarAuthButton isLoggedIn={isLoggedIn} />;
 }

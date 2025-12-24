@@ -1,10 +1,11 @@
 
 import { Navbar } from "@/components/landing-page/navbar";
 import { Hero } from "@/components/landing-page/hero";
-import { Features } from "@/components/landing-page/features";
-import { Pricing } from "@/components/landing-page/pricing";
-import { CTA } from "@/components/landing-page/cta";
-import { Footer } from "@/components/landing-page/footer";
+import dynamic from "next/dynamic";
+const Features = dynamic(() => import("@/components/landing-page/features").then(mod => mod.Features));
+const Pricing = dynamic(() => import("@/components/landing-page/pricing").then(mod => mod.Pricing));
+const CTA = dynamic(() => import("@/components/landing-page/cta").then(mod => mod.CTA));
+const Footer = dynamic(() => import("@/components/landing-page/footer").then(mod => mod.Footer));
 
 export default function LandingPage() {
   return (

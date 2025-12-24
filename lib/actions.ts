@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { qualifyLead } from '@/lib/qualification-engine';
 import { detectUpgradeTriggers } from '@/lib/upgrade-triggers';
+import { calculateUpgradeReadiness } from '@/lib/upgrade-readiness';
 import type {
   Lead,
   CreateLeadInput,
@@ -18,6 +19,15 @@ import type {
   UpgradeAlert,
   LeadStatus,
   DashboardStats,
+  Agency,
+  UpgradeStage,
+  IncomeHistoryEntry,
+  LifeMilestone,
+  ConversationStep,
+  ConversationTimeline,
+  ConversationStepData,
+  FallbackPlan,
+  FallbackReason,
 } from '@/lib/types';
 
 // ============================================
@@ -495,4 +505,639 @@ export async function logContact(
 
   revalidatePath(`/protected/leads/${leadId}`);
   return { success: true };
+}
+
+// ============================================
+// Upgrade Pipeline Actions (NEW)
+// ============================================
+
+/**
+ * Update client financial snapshot
+ */
+export interface FinancialSnapshotInput {
+  leadId: string;
+  currentIncome?: number;
+  currentPropertyValue?: number;
+  outstandingLoanBalance?: number;
+  lifeMilestone?: LifeMilestone;
+}
+
+export async function updateFinancialSnapshot(
+  input: FinancialSnapshotInput
+): Promise<{ success: boolean; lead?: Lead; error?: string }> {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Not authenticated' };
+
+  const { leadId, currentIncome, currentPropertyValue, outstandingLoanBalance, lifeMilestone } = input;
+
+  // Get existing lead
+  const { data: existingLead, error: fetchError } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('id', leadId)
+    .single();
+
+  if (fetchError || !existingLead) {
+    return { success: false, error: 'Lead not found' };
+  }
+
+  // Check access (owner or agency admin)
+  const hasAccess = await checkLeadAccess(supabase, user.id, existingLead);
+  if (!hasAccess) {
+    return { success: false, error: 'Access denied' };
+  }
+
+  const now = new Date().toISOString();
+  const updatePayload: Record<string, unknown> = {};
+
+  // Update income and add to history
+  if (currentIncome !== undefined) {
+    updatePayload.current_income = currentIncome;
+    updatePayload.income_last_updated = now;
+    
+    // Add to income history
+    const incomeHistory: IncomeHistoryEntry[] = existingLead.income_history || [];
+    incomeHistory.push({
+      amount: currentIncome,
+      date: now,
+      notes: 'Updated via financial snapshot',
+    });
+    updatePayload.income_history = incomeHistory;
+  }
+
+  // Update property value
+  if (currentPropertyValue !== undefined) {
+    updatePayload.current_property_value = currentPropertyValue;
+    updatePayload.property_value_last_updated = now;
+  }
+
+  // Update loan balance
+  if (outstandingLoanBalance !== undefined) {
+    updatePayload.outstanding_loan_balance = outstandingLoanBalance;
+    updatePayload.loan_balance_last_updated = now;
+  }
+
+  // Add life milestone
+  if (lifeMilestone) {
+    const milestones: LifeMilestone[] = existingLead.life_milestones || [];
+    milestones.push(lifeMilestone);
+    updatePayload.life_milestones = milestones;
+  }
+
+  // Recalculate upgrade readiness
+  const updatedLead = { ...existingLead, ...updatePayload } as Lead;
+  const readinessResult = calculateUpgradeReadiness(updatedLead);
+  
+  updatePayload.upgrade_readiness_score = readinessResult.score;
+  updatePayload.upgrade_readiness_state = readinessResult.state;
+  updatePayload.upgrade_readiness_breakdown = readinessResult.breakdown;
+
+  // Check for readiness state change (for alerts)
+  const previousState = existingLead.upgrade_readiness_state || 'not_ready';
+  const newState = readinessResult.state;
+
+  const { data: lead, error: updateError } = await supabase
+    .from('leads')
+    .update(updatePayload)
+    .eq('id', leadId)
+    .select()
+    .single();
+
+  if (updateError) {
+    return { success: false, error: updateError.message };
+  }
+
+  // Log event
+  await supabase.from('lead_events').insert({
+    lead_id: leadId,
+    agent_id: user.id,
+    event_type: 'financial_snapshot_updated',
+    event_data: {
+      updated_fields: Object.keys(updatePayload),
+      new_readiness_score: readinessResult.score,
+      new_readiness_state: readinessResult.state,
+    },
+  });
+
+  // Create alert if readiness state improved to 'ready'
+  if (previousState !== 'ready' && newState === 'ready') {
+    await supabase.from('upgrade_alerts').insert({
+      lead_id: leadId,
+      agent_id: existingLead.agent_id,
+      alert_type: 'readiness_state_changed',
+      title: '🎯 Client Ready for Upgrade',
+      description: `${existingLead.name} has reached upgrade readiness. Score: ${readinessResult.score}/100.`,
+      suggested_action: 'Schedule upgrade conversation and prepare affordability analysis.',
+      is_read: false,
+      is_dismissed: false,
+    });
+  }
+
+  revalidatePath(`/protected/leads/${leadId}`);
+  revalidatePath('/protected/pipeline');
+  return { success: true, lead: lead as Lead };
+}
+
+/**
+ * Change upgrade stage with audit trail
+ */
+export async function changeUpgradeStage(
+  leadId: string,
+  newStage: UpgradeStage,
+  reason?: string,
+  notes?: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Not authenticated' };
+
+  // Get existing lead
+  const { data: existingLead, error: fetchError } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('id', leadId)
+    .single();
+
+  if (fetchError || !existingLead) {
+    return { success: false, error: 'Lead not found' };
+  }
+
+  // Check access
+  const hasAccess = await checkLeadAccess(supabase, user.id, existingLead);
+  if (!hasAccess) {
+    return { success: false, error: 'Access denied' };
+  }
+
+  const previousStage = existingLead.upgrade_stage || 'monitoring';
+
+  // Update lead
+  const { error: updateError } = await supabase
+    .from('leads')
+    .update({
+      upgrade_stage: newStage,
+      // upgrade_stage_changed_at is updated by trigger
+    })
+    .eq('id', leadId);
+
+  if (updateError) {
+    return { success: false, error: updateError.message };
+  }
+
+  // Record stage history
+  await supabase.from('upgrade_stage_history').insert({
+    lead_id: leadId,
+    from_stage: previousStage,
+    to_stage: newStage,
+    changed_by: user.id,
+    reason,
+    notes,
+  });
+
+  // Log event
+  await supabase.from('lead_events').insert({
+    lead_id: leadId,
+    agent_id: user.id,
+    event_type: 'upgrade_stage_changed',
+    event_data: {
+      from_stage: previousStage,
+      to_stage: newStage,
+      reason,
+    },
+    notes,
+  });
+
+  revalidatePath(`/protected/leads/${leadId}`);
+  revalidatePath('/protected/pipeline');
+  return { success: true };
+}
+
+/**
+ * Get clients grouped by upgrade stage (for pipeline view)
+ */
+export async function getClientsByUpgradeStage(): Promise<Record<UpgradeStage, Lead[]>> {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { monitoring: [], window_open: [], planning: [], executed: [], lost: [] };
+
+  // Get current agent to check role
+  const { data: agent } = await supabase
+    .from('agents')
+    .select('*, agency:agencies(*)')
+    .eq('id', user.id)
+    .single();
+
+  if (!agent) {
+    return { monitoring: [], window_open: [], planning: [], executed: [], lost: [] };
+  }
+
+  let query = supabase
+    .from('leads')
+    .select('*')
+    .order('upgrade_stage_changed_at', { ascending: false });
+
+  // If admin, get all agency leads; otherwise, only own leads
+  if (agent.role === 'admin' && agent.agency_id) {
+    // Get all agent IDs in the agency
+    const { data: agencyAgents } = await supabase
+      .from('agents')
+      .select('id')
+      .eq('agency_id', agent.agency_id);
+    
+    const agentIds = (agencyAgents || []).map(a => a.id);
+    if (agentIds.length > 0) {
+      query = query.in('agent_id', agentIds);
+    }
+  } else {
+    query = query.eq('agent_id', user.id);
+  }
+
+  const { data: leads } = await query;
+  const allLeads = (leads || []) as Lead[];
+
+  // Group by stage
+  const grouped: Record<UpgradeStage, Lead[]> = {
+    monitoring: [],
+    window_open: [],
+    planning: [],
+    executed: [],
+    lost: [],
+  };
+
+  for (const lead of allLeads) {
+    const stage = (lead.upgrade_stage || 'monitoring') as UpgradeStage;
+    if (grouped[stage]) {
+      grouped[stage].push(lead);
+    }
+  }
+
+  return grouped;
+}
+
+/**
+ * Get agency dashboard stats (admin only)
+ */
+export interface AgencyDashboardStats {
+  totalClients: number;
+  clientsByReadinessState: Record<string, number>;
+  clientsByUpgradeStage: Record<string, number>;
+  upgradesExecutedThisMonth: number;
+  upgradesExecutedThisYear: number;
+  teamMembers: Agent[];
+  isAdmin: boolean;
+}
+
+export async function getAgencyDashboardStats(): Promise<AgencyDashboardStats | null> {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  // Get current agent
+  const { data: agent } = await supabase
+    .from('agents')
+    .select('*, agency:agencies(*)')
+    .eq('id', user.id)
+    .single();
+
+  if (!agent) return null;
+
+  const isAdmin = agent.role === 'admin';
+
+  // Get team members if admin
+  let teamMembers: Agent[] = [];
+  let agentIds: string[] = [user.id];
+
+  if (isAdmin && agent.agency_id) {
+    const { data: agencyAgents } = await supabase
+      .from('agents')
+      .select('*')
+      .eq('agency_id', agent.agency_id);
+    
+    teamMembers = (agencyAgents || []) as Agent[];
+    agentIds = teamMembers.map(a => a.id);
+  }
+
+  // Get all leads for the agent(s)
+  const { data: leads } = await supabase
+    .from('leads')
+    .select('*')
+    .in('agent_id', agentIds);
+
+  const allLeads = (leads || []) as Lead[];
+  const totalClients = allLeads.length;
+
+  // Count by readiness state
+  const clientsByReadinessState: Record<string, number> = {
+    not_ready: 0,
+    monitoring: 0,
+    ready: 0,
+  };
+
+  // Count by upgrade stage
+  const clientsByUpgradeStage: Record<string, number> = {
+    monitoring: 0,
+    window_open: 0,
+    planning: 0,
+    executed: 0,
+    lost: 0,
+  };
+
+  for (const lead of allLeads) {
+    const readinessState = lead.upgrade_readiness_state || 'not_ready';
+    const upgradeStage = lead.upgrade_stage || 'monitoring';
+    
+    clientsByReadinessState[readinessState] = (clientsByReadinessState[readinessState] || 0) + 1;
+    clientsByUpgradeStage[upgradeStage] = (clientsByUpgradeStage[upgradeStage] || 0) + 1;
+  }
+
+  // Count executed upgrades this month and year
+  const now = new Date();
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const thisYearStart = new Date(now.getFullYear(), 0, 1).toISOString();
+
+  const { data: executedThisMonth } = await supabase
+    .from('upgrade_stage_history')
+    .select('id')
+    .in('lead_id', allLeads.map(l => l.id))
+    .eq('to_stage', 'executed')
+    .gte('created_at', thisMonthStart);
+
+  const { data: executedThisYear } = await supabase
+    .from('upgrade_stage_history')
+    .select('id')
+    .in('lead_id', allLeads.map(l => l.id))
+    .eq('to_stage', 'executed')
+    .gte('created_at', thisYearStart);
+
+  return {
+    totalClients,
+    clientsByReadinessState,
+    clientsByUpgradeStage,
+    upgradesExecutedThisMonth: (executedThisMonth || []).length,
+    upgradesExecutedThisYear: (executedThisYear || []).length,
+    teamMembers,
+    isAdmin,
+  };
+}
+
+/**
+ * Reassign client to another agent (admin only)
+ */
+export async function reassignClient(
+  leadId: string,
+  toAgentId: string,
+  reason: string,
+  notes?: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Not authenticated' };
+
+  // Check if current user is admin
+  const { data: currentAgent } = await supabase
+    .from('agents')
+    .select('role, agency_id')
+    .eq('id', user.id)
+    .single();
+
+  if (!currentAgent || currentAgent.role !== 'admin') {
+    return { success: false, error: 'Only admins can reassign clients' };
+  }
+
+  // Get the lead
+  const { data: lead } = await supabase
+    .from('leads')
+    .select('*, agent:agents!leads_agent_id_fkey(agency_id)')
+    .eq('id', leadId)
+    .single();
+
+  if (!lead) {
+    return { success: false, error: 'Lead not found' };
+  }
+
+  // Verify target agent is in same agency
+  const { data: targetAgent } = await supabase
+    .from('agents')
+    .select('id, agency_id')
+    .eq('id', toAgentId)
+    .single();
+
+  if (!targetAgent || targetAgent.agency_id !== currentAgent.agency_id) {
+    return { success: false, error: 'Target agent not in your agency' };
+  }
+
+  const fromAgentId = lead.agent_id;
+
+  // Reason is required
+  if (!reason || reason.trim().length === 0) {
+    return { success: false, error: 'Reason is required for reassignment' };
+  }
+
+  // Update lead
+  const { error: updateError } = await supabase
+    .from('leads')
+    .update({ agent_id: toAgentId })
+    .eq('id', leadId);
+
+  if (updateError) {
+    return { success: false, error: updateError.message };
+  }
+
+  // Log reassignment
+  await supabase.from('client_reassignment_log').insert({
+    lead_id: leadId,
+    from_agent_id: fromAgentId,
+    to_agent_id: toAgentId,
+    reassigned_by: user.id,
+    reason,
+    notes,
+  });
+
+  // Log event
+  await supabase.from('lead_events').insert({
+    lead_id: leadId,
+    agent_id: user.id,
+    event_type: 'client_reassigned',
+    event_data: {
+      from_agent_id: fromAgentId,
+      to_agent_id: toAgentId,
+      reason,
+    },
+    notes,
+  });
+
+  revalidatePath('/protected/leads');
+  revalidatePath('/protected/pipeline');
+  revalidatePath('/protected/admin');
+  return { success: true };
+}
+
+// ============================================
+// Upgrade Features Actions (NEW)
+// ============================================
+
+/**
+ * Update conversation timeline step
+ */
+export async function updateConversationStep(
+  leadId: string,
+  step: ConversationStep,
+  completed: boolean,
+  notes?: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Not authenticated' };
+
+  // Get existing lead
+  const { data: existingLead, error: fetchError } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('id', leadId)
+    .single();
+
+  if (fetchError || !existingLead) {
+    return { success: false, error: 'Lead not found' };
+  }
+
+  // Check access
+  const hasAccess = await checkLeadAccess(supabase, user.id, existingLead);
+  if (!hasAccess) {
+    return { success: false, error: 'Access denied' };
+  }
+
+  // Get or initialize timeline
+  const timeline: ConversationTimeline = existingLead.conversation_timeline || {
+    financial_validation: { completed: false },
+    soft_discussion: { completed: false },
+    family_alignment: { completed: false },
+    property_matching: { completed: false },
+    execution: { completed: false },
+  };
+
+  // Update the step
+  const stepData: ConversationStepData = {
+    completed,
+    completed_at: completed ? new Date().toISOString() : undefined,
+    notes: notes || undefined,
+  };
+  timeline[step] = stepData;
+
+  // Update lead
+  const { error: updateError } = await supabase
+    .from('leads')
+    .update({ conversation_timeline: timeline })
+    .eq('id', leadId);
+
+  if (updateError) {
+    return { success: false, error: updateError.message };
+  }
+
+  revalidatePath(`/protected/leads/${leadId}`);
+  return { success: true };
+}
+
+/**
+ * Save fallback plan when upgrade is not proceeding
+ */
+export async function saveFallbackPlan(
+  leadId: string,
+  plan: Omit<FallbackPlan, 'created_at'>
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Not authenticated' };
+
+  // Get existing lead
+  const { data: existingLead, error: fetchError } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('id', leadId)
+    .single();
+
+  if (fetchError || !existingLead) {
+    return { success: false, error: 'Lead not found' };
+  }
+
+  // Check access
+  const hasAccess = await checkLeadAccess(supabase, user.id, existingLead);
+  if (!hasAccess) {
+    return { success: false, error: 'Access denied' };
+  }
+
+  // Create fallback plan with timestamp
+  const fallbackPlan: FallbackPlan = {
+    ...plan,
+    created_at: new Date().toISOString(),
+  };
+
+  // Update lead
+  const { error: updateError } = await supabase
+    .from('leads')
+    .update({ fallback_plan: fallbackPlan })
+    .eq('id', leadId);
+
+  if (updateError) {
+    return { success: false, error: updateError.message };
+  }
+
+  // Log event
+  await supabase.from('lead_events').insert({
+    lead_id: leadId,
+    agent_id: user.id,
+    event_type: 'note_added',
+    event_data: {
+      type: 'fallback_plan',
+      reason: plan.reason,
+      next_review_date: plan.next_review_date,
+    },
+    notes: plan.advisory_notes,
+  });
+
+  revalidatePath(`/protected/leads/${leadId}`);
+  return { success: true };
+}
+
+// ============================================
+// Helper Functions
+// ============================================
+
+/**
+ * Check if user has access to a lead (owner or agency admin)
+ */
+async function checkLeadAccess(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  lead: { agent_id: string }
+): Promise<boolean> {
+  // Owner always has access
+  if (lead.agent_id === userId) {
+    return true;
+  }
+
+  // Check if user is agency admin with same agency as lead owner
+  const { data: currentAgent } = await supabase
+    .from('agents')
+    .select('role, agency_id')
+    .eq('id', userId)
+    .single();
+
+  if (!currentAgent || currentAgent.role !== 'admin') {
+    return false;
+  }
+
+  const { data: leadAgent } = await supabase
+    .from('agents')
+    .select('agency_id')
+    .eq('id', lead.agent_id)
+    .single();
+
+  return leadAgent?.agency_id === currentAgent.agency_id;
 }

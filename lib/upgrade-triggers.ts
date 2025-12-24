@@ -304,6 +304,8 @@ export function getUpgradeAlertMessage(alertType: UpgradeAlertType): string {
     lease_ending: 'Current lease ending soon - urgent opportunity',
     higher_tier_interest: 'Showing interest in higher budget range',
     rent_to_buy_ready: 'Renter with strong buying potential',
+    readiness_state_changed: 'Upgrade readiness state has changed',
   };
   return messages[alertType];
 }
+
