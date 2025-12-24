@@ -1,53 +1,115 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# LeadQualify - Lead Qualification Platform for Malaysia Real Estate Agents
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
-
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+A B2B SaaS platform for housing agents in Malaysia (Klang Valley, Penang, Johor Bahru) to qualify leads quickly, recommend realistic locations, predict upgrade readiness, and improve closing efficiency.
 
 ## Features
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Proxy
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+### Core Functionality
+- **Lead Input & Management** - Create and manage leads with comprehensive details
+- **Qualification Scoring Engine** - Rule-based scoring (0-100) with status labels
+- **Location Affordability Engine** - Malaysia-specific pricing rules for KV, Penang, JB
+- **Financing Readiness Indicator** - Self-declared assessment (not credit score)
+- **Upgrade Trigger System** - Alerts when leads are ready for property upgrades
+- **Agent Dashboard** - Overview of all leads with stats and alerts
 
-## Demo
+### Scoring Breakdown
+- 40% Income vs Property Affordability
+- 30% Location Fit
+- 20% Financing Readiness
+- 10% Urgency/Intent
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+### Malaysia-Specific Areas
+- **Klang Valley**: Cheras, PJ, Bangsar, Mont Kiara, KLCC, etc.
+- **Penang**: Georgetown, Gurney, Bayan Lepas, etc.
+- **Johor Bahru**: Mount Austin, Medini, Puteri Harbour, etc.
 
-## Deploy to Vercel
+## Tech Stack
 
-Vercel deployment will guide you through creating a Supabase account and project.
+- **Frontend**: Next.js 16 (App Router), Tailwind CSS, shadcn/ui
+- **Backend**: Server Actions, Supabase Auth
+- **Database**: Supabase PostgreSQL with Row Level Security
+- **Deployment**: Vercel
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+## Getting Started
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+### Prerequisites
+- Node.js 18+
+- Supabase account
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+### Database Setup
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+1. Go to your Supabase project dashboard
+2. Navigate to SQL Editor
+3. Run the migration files in order:
+   ```
+   supabase/migrations/001_initial_schema.sql
+   supabase/migrations/002_seed_pricing_rules.sql
+   ```
+
+### Environment Variables
+
+Create a `.env.local` file with:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
+```
+
+### Installation
+
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000)
+
+## Project Structure
+
+```
+├── app/
+│   ├── protected/           # Authenticated routes
+│   │   ├── page.tsx        # Dashboard
+│   │   └── leads/          # Lead management
+│   │       ├── page.tsx    # Lead list
+│   │       ├── new/        # Create lead
+│   │       └── [id]/       # Lead detail & edit
+│   └── auth/               # Authentication pages
+├── components/
+│   ├── dashboard.tsx       # Dashboard component
+│   ├── lead-form.tsx       # Lead create/edit form
+│   ├── lead-list.tsx       # Lead listing
+│   ├── lead-detail.tsx     # Lead detail view
+│   └── ui/                 # shadcn/ui components
+├── lib/
+│   ├── actions.ts          # Server actions
+│   ├── types.ts            # TypeScript types
+│   ├── areas.ts            # Malaysia area data
+│   ├── qualification-engine.ts  # Scoring logic
+│   └── upgrade-triggers.ts      # Upgrade detection
+└── supabase/
+    └── migrations/         # Database schema
+```
+
+## Key Files
+
+- **[lib/qualification-engine.ts](lib/qualification-engine.ts)** - Rule-based scoring logic
+- **[lib/upgrade-triggers.ts](lib/upgrade-triggers.ts)** - Upgrade alert detection
+- **[lib/areas.ts](lib/areas.ts)** - Malaysia-specific area data
+- **[lib/types.ts](lib/types.ts)** - All TypeScript definitions
+
+## Legal Disclaimers
+
+⚠️ **Important**: This system provides a **Financing Readiness Indicator**, NOT a credit score.
+
+- Does not retrieve, store, or infer real credit scores
+- Based on self-declared information only
+- Final loan approval depends on bank's assessment
+- All financial indicators include appropriate disclaimers
+
+## License
+
+MIT
 
 ## Clone and run locally
 
