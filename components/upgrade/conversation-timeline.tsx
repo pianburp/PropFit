@@ -135,7 +135,7 @@ function TimelineStep({ leadId, step, stepNumber, data, isLast }: TimelineStepPr
             {/* Timeline line */}
             {!isLast && (
                 <div
-                    className={`absolute left-4 top-10 w-0.5 h-[calc(100%-20px)] ${localCompleted ? 'bg-green-500' : 'bg-muted'
+                    className={`absolute left-4 top-10 w-0.5 h-[calc(100%-20px)] ${localCompleted ? 'bg-success' : 'bg-muted'
                         }`}
                 />
             )}
@@ -144,7 +144,7 @@ function TimelineStep({ leadId, step, stepNumber, data, isLast }: TimelineStepPr
                 {/* Step indicator */}
                 <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 z-10 ${localCompleted
-                            ? 'bg-green-500 text-white'
+                            ? 'bg-success text-success-foreground'
                             : 'bg-muted text-muted-foreground border'
                         }`}
                 >
@@ -174,7 +174,7 @@ function TimelineStep({ leadId, step, stepNumber, data, isLast }: TimelineStepPr
                     </p>
 
                     {data.completed_at && (
-                        <p className="text-xs text-green-600 mt-1">
+                        <p className="text-xs text-success mt-1">
                             Completed: {new Date(data.completed_at).toLocaleDateString('en-MY', {
                                 year: 'numeric',
                                 month: 'short',

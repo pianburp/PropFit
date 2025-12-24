@@ -172,29 +172,29 @@ function getStageIcon(stage: UpgradeStage) {
     const iconClass = 'w-4 h-4';
     switch (stage) {
         case 'monitoring':
-            return <Eye className={`${iconClass} text-slate-500`} />;
+            return <Eye className={`${iconClass} text-muted-foreground`} />;
         case 'window_open':
-            return <TrendingUp className={`${iconClass} text-blue-500`} />;
+            return <TrendingUp className={`${iconClass} text-primary`} />;
         case 'planning':
-            return <Clock className={`${iconClass} text-amber-500`} />;
+            return <Clock className={`${iconClass} text-chart-3`} />;
         case 'executed':
-            return <CheckCircle className={`${iconClass} text-green-500`} />;
+            return <CheckCircle className={`${iconClass} text-success`} />;
         case 'lost':
-            return <XCircle className={`${iconClass} text-red-500`} />;
+            return <XCircle className={`${iconClass} text-destructive`} />;
     }
 }
 
 function getStageColumnColor(stage: UpgradeStage) {
     switch (stage) {
         case 'monitoring':
-            return 'bg-slate-50 border-slate-200';
+            return 'bg-muted/50 border-border';
         case 'window_open':
-            return 'bg-blue-50 border-blue-200';
+            return 'bg-primary/5 border-primary/20';
         case 'planning':
-            return 'bg-amber-50 border-amber-200';
+            return 'bg-chart-3/5 border-chart-3/20';
         case 'executed':
-            return 'bg-green-50 border-green-200';
+            return 'bg-success/5 border-success/20';
         case 'lost':
-            return 'bg-red-50 border-red-200';
+            return 'bg-destructive/5 border-destructive/20';
     }
 }

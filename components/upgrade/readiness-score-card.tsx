@@ -158,7 +158,7 @@ interface ScoreFactorProps {
 
 function ScoreFactor({ icon, label, score, maxScore, reason }: ScoreFactorProps) {
     const percentage = (score / maxScore) * 100;
-    const color = percentage >= 70 ? 'bg-green-500' : percentage >= 40 ? 'bg-amber-500' : 'bg-red-500';
+    const color = percentage >= 70 ? 'bg-success' : percentage >= 40 ? 'bg-chart-3' : 'bg-destructive';
 
     return (
         <div className="space-y-1">
@@ -186,21 +186,21 @@ function getStateIcon(state: UpgradeReadinessState) {
     const iconClass = 'w-5 h-5';
     switch (state) {
         case 'ready':
-            return <CheckCircle className={`${iconClass} text-green-500`} />;
+            return <CheckCircle className={`${iconClass} text-success`} />;
         case 'monitoring':
-            return <AlertCircle className={`${iconClass} text-amber-500`} />;
+            return <AlertCircle className={`${iconClass} text-chart-3`} />;
         case 'not_ready':
-            return <XCircle className={`${iconClass} text-red-500`} />;
+            return <XCircle className={`${iconClass} text-destructive`} />;
     }
 }
 
 function getProgressColor(state: UpgradeReadinessState) {
     switch (state) {
         case 'ready':
-            return 'bg-green-500';
+            return 'bg-success';
         case 'monitoring':
-            return 'bg-amber-500';
+            return 'bg-chart-3';
         case 'not_ready':
-            return 'bg-red-500';
+            return 'bg-destructive';
     }
 }

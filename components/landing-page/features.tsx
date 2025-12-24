@@ -1,43 +1,43 @@
 
 import {
-    Calculator,
-    Users,
-    BarChart3,
+    TrendingUp,
     ShieldCheck,
-    Clock,
-    Smartphone
+    MessageSquareText,
+    AlertTriangle,
+    History,
+    Target
 } from "lucide-react";
 
 const features = [
     {
-        title: "Instant Qualification",
-        description: "Our smart forms ask the right questions about income, employment, and budget to score leads instantly.",
+        title: "Upgrade Readiness Score",
+        description: "Know exactly when a client is financially ready to upgrade. No more guessing, no more awkward conversations.",
+        icon: Target,
+    },
+    {
+        title: "Deal Risk Flags",
+        description: "Spot potential blockers early—family objections, bank rejection risks, timing issues—before they kill the deal.",
+        icon: AlertTriangle,
+    },
+    {
+        title: "Why-Now Panel",
+        description: "Get clear talking points that explain the upgrade opportunity professionally. Advise, don't sell.",
+        icon: MessageSquareText,
+    },
+    {
+        title: "Financial Snapshot",
+        description: "See equity position, affordability ceiling, and realistic upgrade paths at a glance. Numbers you can trust.",
+        icon: TrendingUp,
+    },
+    {
+        title: "Readiness History",
+        description: "Track how each client's situation evolves over time. Know the perfect moment to reach out.",
+        icon: History,
+    },
+    {
+        title: "Conservative Assumptions",
+        description: "Built-in safety margins protect your credibility. If the numbers work here, they'll work at the bank.",
         icon: ShieldCheck,
-    },
-    {
-        title: "Financial Readiness",
-        description: "Estimate loan eligibility based on current commitments, income, and down payment capability.",
-        icon: Calculator,
-    },
-    {
-        title: "Lead CRM",
-        description: "Manage all your prospects in one place. Track status from 'New' to 'Closed' with ease.",
-        icon: Users,
-    },
-    {
-        title: "Insightful Analytics",
-        description: "Understand your lead pipeline with beautiful charts and conversion metrics.",
-        icon: BarChart3,
-    },
-    {
-        title: "Fast & Mobile Friendly",
-        description: "Your clients can fill out qualification forms on any device, anywhere, anytime.",
-        icon: Smartphone,
-    },
-    {
-        title: "Save Hours Weekly",
-        description: "Stop touring with clients who can't buy. Focus on the top 20% of ready-to-move leads.",
-        icon: Clock,
     },
 ];
 
@@ -47,10 +47,10 @@ export function Features() {
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-16">
                     <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
-                        Everything you need to qualify leads
+                        Turn upgrades from risky guesses into confident moves
                     </h2>
                     <p className="max-w-[700px] text-muted-foreground md:text-xl">
-                        Built by agents, for agents. We know the pain of wasted viewings, so we solved it.
+                        You know upgrades make money. Now get the safe, structured system that tells you when, how, and whether you should do it.
                     </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

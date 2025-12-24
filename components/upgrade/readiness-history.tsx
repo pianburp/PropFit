@@ -152,7 +152,7 @@ function parseEvent(event: LeadEvent): {
                 : null;
 
             return {
-                icon: <TrendingUp className="w-4 h-4 text-green-600" />,
+                icon: <TrendingUp className="w-4 h-4 text-success" />,
                 title: 'Income Updated',
                 description: newIncome
                     ? `Income recorded as RM ${newIncome.toLocaleString()}${incomeChange ? ` (${Number(incomeChange) > 0 ? '+' : ''}${incomeChange}%)` : ''}`
@@ -167,7 +167,7 @@ function parseEvent(event: LeadEvent): {
             if (data.loan_balance_updated) updates.push('loan balance');
 
             return {
-                icon: <RefreshCw className="w-4 h-4 text-blue-600" />,
+                icon: <RefreshCw className="w-4 h-4 text-primary" />,
                 title: 'Financial Snapshot Updated',
                 description: updates.length > 0
                     ? `Updated: ${updates.join(', ')}`
@@ -192,7 +192,7 @@ function parseEvent(event: LeadEvent): {
             const toStage = data.to_stage as string | undefined;
 
             return {
-                icon: <Circle className="w-4 h-4 text-amber-600" />,
+                icon: <Circle className="w-4 h-4 text-chart-3" />,
                 title: 'Stage Changed',
                 description: fromStage && toStage
                     ? `${formatStage(fromStage)} → ${formatStage(toStage)}`

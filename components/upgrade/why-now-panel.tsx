@@ -63,14 +63,14 @@ export function WhyNowPanel({ lead }: WhyNowPanelProps) {
                         {justification.incomeGrowth && (
                             <JustificationCard
                                 point={justification.incomeGrowth}
-                                icon={<TrendingUp className="w-4 h-4 text-green-600" />}
+                                icon={<TrendingUp className="w-4 h-4 text-success" />}
                             />
                         )}
 
                         {justification.equityPosition && (
                             <JustificationCard
                                 point={justification.equityPosition}
-                                icon={<Home className="w-4 h-4 text-blue-600" />}
+                                icon={<Home className="w-4 h-4 text-primary" />}
                             />
                         )}
 

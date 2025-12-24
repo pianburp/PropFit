@@ -114,7 +114,7 @@ export function UpgradePathSummary({ lead }: UpgradePathSummaryProps) {
                                         <tr>
                                             <td className="py-2 font-medium">Net Monthly Change</td>
                                             <td className="text-right py-2"></td>
-                                            <td className={`text-right py-2 font-bold ${analysis.monthlyDifference > 0 ? 'text-amber-600' : 'text-green-600'
+                                            <td className={`text-right py-2 font-bold ${analysis.monthlyDifference > 0 ? 'text-chart-3' : 'text-success'
                                                 }`}>
                                                 {analysis.monthlyDifference > 0 ? '+' : ''}
                                                 {formatRMFull(analysis.monthlyDifference)}
@@ -129,24 +129,24 @@ export function UpgradePathSummary({ lead }: UpgradePathSummaryProps) {
 
                 {/* Feasibility Status */}
                 <div className={`p-3 rounded-lg ${analysis.isFeasible
-                    ? 'bg-green-50 border border-green-200'
-                    : 'bg-amber-50 border border-amber-200'
+                    ? 'bg-success/10 border border-success/30'
+                    : 'bg-chart-3/10 border border-chart-3/30'
                     }`}>
                     <div className="flex items-start gap-2">
                         {analysis.isFeasible ? (
-                            <CheckCircle className="w-4 h-4 text-green-600 mt-0.5" />
+                            <CheckCircle className="w-4 h-4 text-success mt-0.5" />
                         ) : (
-                            <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5" />
+                            <AlertTriangle className="w-4 h-4 text-chart-3 mt-0.5" />
                         )}
                         <div>
-                            <p className={`text-sm font-medium ${analysis.isFeasible ? 'text-green-800' : 'text-amber-800'
+                            <p className={`text-sm font-medium ${analysis.isFeasible ? 'text-success' : 'text-chart-3'
                                 }`}>
                                 {analysis.feasibilityReason}
                             </p>
                             {analysis.recommendedSteps.length > 0 && (
                                 <ul className="mt-2 text-xs space-y-1">
                                     {analysis.recommendedSteps.map((step, i) => (
-                                        <li key={i} className={analysis.isFeasible ? 'text-green-700' : 'text-amber-700'}>
+                                        <li key={i} className={analysis.isFeasible ? 'text-success/80' : 'text-chart-3/80'}>
                                             • {step}
                                         </li>
                                     ))}
@@ -183,7 +183,7 @@ function StepItem({ step, isCompleted, isCurrent }: StepItemProps) {
         <div className={`flex items-start gap-3 p-2 rounded-lg ${isCurrent ? 'bg-primary/10' : ''
             }`}>
             <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isCompleted
-                ? 'bg-green-500 text-white'
+                ? 'bg-success text-success-foreground'
                 : isCurrent
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground'
@@ -191,7 +191,7 @@ function StepItem({ step, isCompleted, isCurrent }: StepItemProps) {
                 {isCompleted ? <CheckCircle className="w-4 h-4" /> : step.id}
             </div>
             <div className="flex-1">
-                <p className={`font-medium text-sm ${isCompleted ? 'text-green-700 line-through' : ''
+                <p className={`font-medium text-sm ${isCompleted ? 'text-success line-through' : ''
                     }`}>
                     {step.title}
                 </p>

@@ -136,8 +136,8 @@ function ObjectionAccordion({ objection }: ObjectionAccordionProps) {
                         <p className="text-sm whitespace-pre-line">{objection.factualResponse}</p>
                     </div>
 
-                    <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-2">
-                        <p className="text-xs text-amber-800 dark:text-amber-200">
+                    <div className="bg-chart-3/10 border border-chart-3/30 rounded-lg p-2">
+                        <p className="text-xs text-chart-3">
                             ⚠️ {objection.disclaimer}
                         </p>
                     </div>

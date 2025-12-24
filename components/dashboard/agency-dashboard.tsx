@@ -10,7 +10,7 @@ import {
     CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import type { AgencyDashboardStats } from '@/lib/actions';
+import type { AgencyDashboardStats } from '@/lib/server/application/services';
 import {
     UPGRADE_STAGE_LABELS,
     UPGRADE_READINESS_LABELS,
@@ -41,25 +41,25 @@ export function AgencyDashboard({ stats }: AgencyDashboardProps) {
                     title="Total Clients"
                     value={stats.totalClients}
                     icon={<Users className="w-5 h-5" />}
-                    color="bg-blue-100 text-blue-600"
+                    color="bg-primary/10 text-primary"
                 />
                 <MetricCard
                     title="Ready for Upgrade"
                     value={stats.clientsByReadinessState['ready'] || 0}
                     icon={<Target className="w-5 h-5" />}
-                    color="bg-green-100 text-green-600"
+                    color="bg-success/10 text-success"
                 />
                 <MetricCard
                     title="Executed This Month"
                     value={stats.upgradesExecutedThisMonth}
                     icon={<CheckCircle className="w-5 h-5" />}
-                    color="bg-purple-100 text-purple-600"
+                    color="bg-chart-4/10 text-chart-4"
                 />
                 <MetricCard
                     title="Executed This Year"
                     value={stats.upgradesExecutedThisYear}
                     icon={<Calendar className="w-5 h-5" />}
-                    color="bg-amber-100 text-amber-600"
+                    color="bg-chart-3/10 text-chart-3"
                 />
             </div>
 
@@ -93,8 +93,8 @@ export function AgencyDashboard({ stats }: AgencyDashboardProps) {
                                         </div>
                                         <div className="h-2 bg-muted rounded-full overflow-hidden">
                                             <div
-                                                className={`h-full ${state === 'ready' ? 'bg-green-500' :
-                                                        state === 'monitoring' ? 'bg-amber-500' : 'bg-red-500'
+                                                className={`h-full ${state === 'ready' ? 'bg-success' :
+                                                        state === 'monitoring' ? 'bg-chart-3' : 'bg-destructive'
                                                     }`}
                                                 style={{ width: `${percentage}%` }}
                                             />
@@ -135,10 +135,10 @@ export function AgencyDashboard({ stats }: AgencyDashboardProps) {
                                         </div>
                                         <div className="h-2 bg-muted rounded-full overflow-hidden">
                                             <div
-                                                className={`h-full ${stage === 'executed' ? 'bg-green-500' :
-                                                        stage === 'lost' ? 'bg-red-500' :
-                                                            stage === 'planning' ? 'bg-amber-500' :
-                                                                stage === 'window_open' ? 'bg-blue-500' : 'bg-slate-400'
+                                                className={`h-full ${stage === 'executed' ? 'bg-success' :
+                                                        stage === 'lost' ? 'bg-destructive' :
+                                                            stage === 'planning' ? 'bg-chart-3' :
+                                                                stage === 'window_open' ? 'bg-primary' : 'bg-muted-foreground'
                                                     }`}
                                                 style={{ width: `${percentage}%` }}
                                             />

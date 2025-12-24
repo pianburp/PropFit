@@ -114,7 +114,7 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-2xl font-bold">{lead.name}</h1>
             {lead.is_upgrade_ready && (
-              <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+              <Badge variant="secondary" className="bg-chart-4/20 text-chart-4">
                 <TrendingUp className="w-3 h-3 mr-1" />
                 Upgrade Ready
               </Badge>
@@ -372,10 +372,10 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
                     <div
                       key={index}
                       className={`p-4 rounded-lg border ${suggestion.fit === 'perfect'
-                        ? 'bg-green-50 border-green-200'
+                        ? 'bg-success/10 border-success/30'
                         : suggestion.fit === 'stretch'
-                          ? 'bg-yellow-50 border-yellow-200'
-                          : 'bg-blue-50 border-blue-200'
+                          ? 'bg-chart-3/10 border-chart-3/30'
+                          : 'bg-primary/10 border-primary/30'
                         }`}
                     >
                       <div className="flex items-start justify-between">
@@ -387,10 +387,10 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
                           variant="outline"
                           className={
                             suggestion.fit === 'perfect'
-                              ? 'bg-green-100 text-green-800'
+                              ? 'bg-success/20 text-success border-success/30'
                               : suggestion.fit === 'stretch'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-blue-100 text-blue-800'
+                                ? 'bg-chart-3/20 text-chart-3 border-chart-3/30'
+                                : 'bg-primary/20 text-primary border-primary/30'
                           }
                         >
                           {suggestion.fit === 'perfect' && '✓ Perfect'}
@@ -416,7 +416,7 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-purple-600" />
+                  <TrendingUp className="w-5 h-5 text-chart-4" />
                   Upgrade Triggers
                 </CardTitle>
                 <CardDescription>This lead shows signs of upgrade readiness</CardDescription>
@@ -424,7 +424,7 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
               <CardContent>
                 <div className="space-y-3">
                   {lead.upgrade_triggers.map((trigger, index) => (
-                    <div key={index} className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                    <div key={index} className="p-3 bg-chart-4/10 border border-chart-4/30 rounded-lg">
                       <div className="flex items-center gap-2 mb-1">
                         <Badge variant="secondary">{trigger.type.replace(/_/g, ' ')}</Badge>
                         <span className="text-xs text-muted-foreground">
@@ -529,9 +529,9 @@ function ScoreItem({
   weight: string;
 }) {
   const getScoreColor = (score: number) => {
-    if (score >= 70) return 'text-green-600';
-    if (score >= 45) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 70) return 'text-success';
+    if (score >= 45) return 'text-chart-3';
+    return 'text-destructive';
   };
 
   return (
@@ -558,9 +558,9 @@ function AnalysisSection({
   icon: React.ReactNode;
 }) {
   const getScoreColor = (score: number) => {
-    if (score >= 70) return 'bg-green-100 text-green-800';
-    if (score >= 45) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
+    if (score >= 70) return 'bg-success/20 text-success';
+    if (score >= 45) return 'bg-chart-3/20 text-chart-3';
+    return 'bg-destructive/20 text-destructive';
   };
 
   return (

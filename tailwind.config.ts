@@ -51,6 +51,10 @@ export default {
           "4": "var(--chart-4)",
           "5": "var(--chart-5)",
         },
+        success: {
+          DEFAULT: "var(--success)",
+          foreground: "var(--success-foreground)",
+        },
         sidebar: {
           DEFAULT: "var(--sidebar)",
           foreground: "var(--sidebar-foreground)",

@@ -136,7 +136,7 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 rounded">
           {error}
         </div>
       )}
@@ -284,8 +284,8 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
                     <span className="text-sm">
                       {area.label}
                       <span className={`ml-1 text-xs ${
-                        area.tier === 'budget' ? 'text-green-600' :
-                        area.tier === 'mid' ? 'text-blue-600' : 'text-purple-600'
+                        area.tier === 'budget' ? 'text-success' :
+                        area.tier === 'mid' ? 'text-primary' : 'text-chart-4'
                       }`}>
                         ({area.tier})
                       </span>
@@ -390,7 +390,7 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
           </div>
 
           {/* Disclaimer */}
-          <div className="bg-amber-50 border border-amber-200 p-3 rounded text-sm text-amber-800">
+          <div className="bg-chart-3/10 border border-chart-3/30 p-3 rounded text-sm text-chart-3">
             <strong>Note:</strong> This is a self-declared financing readiness indicator, not a bank credit report.
             Final loan approval depends on the bank&apos;s assessment.
           </div>

@@ -10,7 +10,7 @@ export default function ProtectedLayout({
   return (
     <ProtectedSidebar
       authButton={
-        <Suspense fallback={<div className="h-8 w-20 animate-pulse bg-neutral-200 dark:bg-neutral-700 rounded" />}>
+        <Suspense fallback={<div className="h-8 w-20 animate-pulse bg-muted rounded" />}>
           <AuthButton />
         </Suspense>
       }

@@ -69,7 +69,7 @@ export function DealRiskFlags({ lead }: DealRiskFlagsProps) {
             </CardHeader>
             <CardContent>
                 {!hasRisks ? (
-                    <div className="flex items-center gap-2 text-green-600 py-2">
+                    <div className="flex items-center gap-2 text-success py-2">
                         <CheckCircle className="w-5 h-5" />
                         <span className="text-sm font-medium">No risk flags detected</span>
                     </div>
@@ -100,19 +100,19 @@ function RiskFlagItem({ risk }: RiskFlagItemProps) {
 
     const severityStyles = {
         high: {
-            bg: 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800',
-            icon: <AlertTriangle className="w-4 h-4 text-red-600" />,
-            badge: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+            bg: 'bg-destructive/10 border-destructive/30',
+            icon: <AlertTriangle className="w-4 h-4 text-destructive" />,
+            badge: 'bg-destructive/20 text-destructive',
         },
         medium: {
-            bg: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800',
-            icon: <AlertCircle className="w-4 h-4 text-amber-600" />,
-            badge: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
+            bg: 'bg-chart-3/10 border-chart-3/30',
+            icon: <AlertCircle className="w-4 h-4 text-chart-3" />,
+            badge: 'bg-chart-3/20 text-chart-3',
         },
         low: {
-            bg: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800',
-            icon: <Info className="w-4 h-4 text-blue-600" />,
-            badge: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+            bg: 'bg-primary/10 border-primary/30',
+            icon: <Info className="w-4 h-4 text-primary" />,
+            badge: 'bg-primary/20 text-primary',
         },
     };
 

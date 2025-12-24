@@ -28,7 +28,7 @@ export function SidebarAuthButton({ isLoggedIn }: SidebarAuthButtonProps) {
                 onClick={handleLogout}
                 className={cn(
                     "flex items-center justify-start gap-2 group/sidebar py-2",
-                    "text-neutral-700 dark:text-neutral-200 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                    "text-sidebar-foreground hover:text-destructive transition-colors"
                 )}
             >
                 <LogOut className="h-5 w-5 shrink-0" />
@@ -51,7 +51,7 @@ export function SidebarAuthButton({ isLoggedIn }: SidebarAuthButtonProps) {
                 href="/auth/login"
                 className={cn(
                     "flex items-center justify-start gap-2 group/sidebar py-2",
-                    "text-neutral-700 dark:text-neutral-200"
+                    "text-sidebar-foreground"
                 )}
             >
                 <LogIn className="h-5 w-5 shrink-0" />
@@ -69,7 +69,7 @@ export function SidebarAuthButton({ isLoggedIn }: SidebarAuthButtonProps) {
                 href="/auth/sign-up"
                 className={cn(
                     "flex items-center justify-start gap-2 group/sidebar py-2",
-                    "text-neutral-700 dark:text-neutral-200"
+                    "text-sidebar-foreground"
                 )}
             >
                 <UserPlus className="h-5 w-5 shrink-0" />

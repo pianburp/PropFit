@@ -43,44 +43,44 @@ export function Dashboard({ stats }: DashboardProps) {
           title="Total Leads"
           value={stats.total_leads}
           icon={<Users className="w-5 h-5" />}
-          color="bg-blue-100 text-blue-600"
+          color="bg-primary/10 text-primary"
         />
         <StatCard
           title="Qualified"
           value={stats.qualified_leads}
           icon={<CheckCircle className="w-5 h-5" />}
-          color="bg-green-100 text-green-600"
+          color="bg-success/10 text-success"
         />
         <StatCard
           title="Stretch"
           value={stats.stretch_leads}
           icon={<AlertTriangle className="w-5 h-5" />}
-          color="bg-yellow-100 text-yellow-600"
+          color="bg-chart-3/10 text-chart-3"
         />
         <StatCard
           title="Not Qualified"
           value={stats.not_qualified_leads}
           icon={<XCircle className="w-5 h-5" />}
-          color="bg-red-100 text-red-600"
+          color="bg-destructive/10 text-destructive"
         />
         <StatCard
           title="Upgrade Ready"
           value={stats.upgrade_ready_leads}
           icon={<TrendingUp className="w-5 h-5" />}
-          color="bg-purple-100 text-purple-600"
+          color="bg-chart-4/10 text-chart-4"
         />
       </div>
 
       {/* Alerts Section */}
       {stats.pending_alerts.length > 0 && (
-        <Card className="border-purple-200 bg-purple-50/50">
+        <Card className="border-chart-4/30 bg-chart-4/5">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Bell className="w-5 h-5 text-purple-600" />
-                <CardTitle className="text-purple-900">Upgrade Alerts</CardTitle>
+                <Bell className="w-5 h-5 text-chart-4" />
+                <CardTitle className="text-foreground">Upgrade Alerts</CardTitle>
               </div>
-              <Badge variant="secondary" className="bg-purple-200 text-purple-800">
+              <Badge variant="secondary" className="bg-chart-4/20 text-chart-4">
                 {stats.pending_alerts.length} new
               </Badge>
             </div>
@@ -197,19 +197,19 @@ export function Dashboard({ stats }: DashboardProps) {
                   label="Qualified"
                   count={stats.qualified_leads}
                   total={stats.total_leads}
-                  color="bg-green-500"
+                  color="bg-success"
                 />
                 <QualificationStat
                   label="Stretch"
                   count={stats.stretch_leads}
                   total={stats.total_leads}
-                  color="bg-yellow-500"
+                  color="bg-chart-3"
                 />
                 <QualificationStat
                   label="Not Qualified"
                   count={stats.not_qualified_leads}
                   total={stats.total_leads}
-                  color="bg-red-500"
+                  color="bg-destructive"
                 />
               </div>
             </CardContent>
@@ -223,19 +223,19 @@ export function Dashboard({ stats }: DashboardProps) {
             <CardContent className="space-y-2">
               <Button asChild variant="outline" className="w-full justify-start">
                 <Link href="/protected/leads?qualification=qualified">
-                  <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
+                  <CheckCircle className="w-4 h-4 mr-2 text-success" />
                   View Qualified Leads
                 </Link>
               </Button>
               <Button asChild variant="outline" className="w-full justify-start">
                 <Link href="/protected/leads?qualification=stretch">
-                  <AlertTriangle className="w-4 h-4 mr-2 text-yellow-600" />
+                  <AlertTriangle className="w-4 h-4 mr-2 text-chart-3" />
                   View Stretch Leads
                 </Link>
               </Button>
               <Button asChild variant="outline" className="w-full justify-start">
                 <Link href="/protected/leads?upgrade=true">
-                  <TrendingUp className="w-4 h-4 mr-2 text-purple-600" />
+                  <TrendingUp className="w-4 h-4 mr-2 text-chart-4" />
                   View Upgrade Ready
                 </Link>
               </Button>
@@ -279,12 +279,12 @@ function AlertItem({ alert }: { alert: DashboardStats['pending_alerts'][0] }) {
   };
 
   return (
-    <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-purple-200">
+    <div className="flex items-start gap-3 p-3 bg-background rounded-lg border border-chart-4/30">
       <div className="flex-1">
-        <div className="font-medium text-purple-900">{alert.title}</div>
-        <p className="text-sm text-purple-700">{alert.description}</p>
+        <div className="font-medium text-foreground">{alert.title}</div>
+        <p className="text-sm text-muted-foreground">{alert.description}</p>
         {alert.suggested_action && (
-          <p className="text-sm text-purple-600 mt-1 italic">💡 {alert.suggested_action}</p>
+          <p className="text-sm text-chart-4 mt-1 italic">💡 {alert.suggested_action}</p>
         )}
       </div>
       <div className="flex items-center gap-2">

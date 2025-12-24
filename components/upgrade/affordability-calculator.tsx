@@ -181,10 +181,10 @@ export function AffordabilityCalculator({
                 </div>
 
                 {/* Assumptions Notice */}
-                <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
                     <div className="flex items-start gap-2">
-                        <Info className="w-4 h-4 text-blue-600 mt-0.5" />
-                        <div className="text-sm text-blue-800">
+                        <Info className="w-4 h-4 text-primary mt-0.5" />
+                        <div className="text-sm text-foreground">
                             <p className="font-medium">Conservative Assumptions Used:</p>
                             <ul className="mt-1 text-xs space-y-0.5">
                                 <li>• Interest rate: {(interestRate.rate * 100).toFixed(1)}% p.a. ({interestRate.description})</li>
@@ -209,7 +209,7 @@ export function AffordabilityCalculator({
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="p-3 rounded-lg bg-muted">
                                         <div className="text-xs text-muted-foreground">Conservative Property Range</div>
-                                        <div className="text-lg font-bold text-green-600">
+                                        <div className="text-lg font-bold text-success">
                                             {formatRMFull(affordabilityResult.conservativePropertyPrice)}
                                         </div>
                                     </div>
@@ -255,7 +255,7 @@ export function AffordabilityCalculator({
                                     </div>
                                     <div className="p-3 rounded-lg bg-muted">
                                         <div className="text-xs text-muted-foreground">Usable Equity (after buffer)</div>
-                                        <div className="text-lg font-bold text-green-600">
+                                        <div className="text-lg font-bold text-success">
                                             {formatRMFull(equityResult.usableEquity)}
                                         </div>
                                     </div>
@@ -272,13 +272,13 @@ export function AffordabilityCalculator({
                                     </div>
                                     <div className="flex justify-between font-medium pt-1 border-t">
                                         <span>Available for Downpayment</span>
-                                        <span className="text-green-600">{formatRMFull(equityResult.availableForDownpayment)}</span>
+                                        <span className="text-success">{formatRMFull(equityResult.availableForDownpayment)}</span>
                                     </div>
                                 </div>
 
                                 {equityResult.usableEquity > 0 && (
-                                    <div className="p-3 rounded-lg bg-green-50 border border-green-200">
-                                        <p className="text-sm text-green-800">
+                                    <div className="p-3 rounded-lg bg-success/10 border border-success/30">
+                                        <p className="text-sm text-success">
                                             With this equity as downpayment (10%), client could afford a property up to{' '}
                                             <span className="font-bold">{formatRMFull(equityResult.affordableUpgradeProperty)}</span>
                                         </p>
@@ -290,10 +290,10 @@ export function AffordabilityCalculator({
                 )}
             </CardContent>
             <CardFooter>
-                <div className="w-full p-3 rounded-lg bg-amber-50 border border-amber-200">
+                <div className="w-full p-3 rounded-lg bg-chart-3/10 border border-chart-3/30">
                     <div className="flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5" />
-                        <p className="text-xs text-amber-800">
+                        <AlertTriangle className="w-4 h-4 text-chart-3 mt-0.5" />
+                        <p className="text-xs text-chart-3">
                             <span className="font-medium">Important:</span> This is an illustrative estimate only.
                             Actual loan approval depends on bank assessment, credit score, documentation, and
                             other eligibility criteria. This is NOT a loan approval.

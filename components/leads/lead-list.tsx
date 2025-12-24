@@ -136,7 +136,7 @@ function LeadCard({ lead }: { lead: Lead }) {
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-semibold text-lg truncate">{lead.name}</h3>
                 {lead.is_upgrade_ready && (
-                  <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                  <Badge variant="secondary" className="bg-chart-4/20 text-chart-4">
                     <TrendingUp className="w-3 h-3 mr-1" />
                     Upgrade Ready
                   </Badge>

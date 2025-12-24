@@ -180,7 +180,7 @@ export function FinancialSnapshot({ lead }: FinancialSnapshotProps) {
                         <div className="flex items-center justify-between">
                             <span className="text-sm font-medium">Estimated Equity</span>
                             <span
-                                className={`font-bold ${equity >= 0 ? 'text-green-600' : 'text-red-600'
+                                className={`font-bold ${equity >= 0 ? 'text-success' : 'text-destructive'
                                     }`}
                             >
                                 RM {equity.toLocaleString()} ({equityPercent}%)
