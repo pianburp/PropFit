@@ -9,6 +9,7 @@ import {
     Sidebar,
     SidebarBody,
     SidebarLink,
+    useSidebar,
 } from "@/components/ui/sidebar";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -37,31 +38,23 @@ const links = [
 ];
 
 const Logo = () => {
+    const { open, animate } = useSidebar();
     return (
         <Link
             href="/protected"
-            className="font-bold flex items-center gap-2 text-sm text-foreground py-1 relative z-20"
+            className="font-bold flex items-center gap-2 text-sm text-foreground py-1 relative z-20 justify-start px-2"
         >
             <House className="h-5 w-5 shrink-0 text-foreground" />
             <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="font-semibold text-foreground whitespace-pre"
+                animate={{
+                    width: animate ? (open ? "auto" : 0) : "auto",
+                    opacity: animate ? (open ? 1 : 0) : 1,
+                }}
+                className="font-semibold text-foreground whitespace-pre overflow-hidden"
             >
                 PropFit
             </motion.span>
-        </Link>
-    );
-};
-
-const LogoIcon = () => {
-    return (
-        <Link
-            href="/protected"
-            className="font-bold flex items-center gap-2 text-sm text-foreground py-1 relative z-20"
-        >
-            <House className="h-5 w-5 shrink-0 text-foreground" />
-        </Link>
+        </Link >
     );
 };
 
@@ -72,14 +65,14 @@ export function ProtectedSidebar({ children, authButton }: { children: React.Rea
         <div
             className={cn(
                 "flex flex-col md:flex-row bg-background w-full flex-1 mx-auto overflow-hidden",
-                "min-h-screen"
+                "h-screen"
             )}
         >
             <Sidebar open={open} setOpen={setOpen}>
                 <SidebarBody className="justify-between h-full">
                     {/* Navigation section */}
                     <div className="flex flex-col overflow-y-auto overflow-x-hidden">
-                        {open ? <Logo /> : <LogoIcon />}
+                        <Logo />
                         <div className="mt-8 flex flex-col gap-2">
                             {links.map((link, idx) => (
                                 <SidebarLink key={idx} link={link} />
@@ -95,7 +88,7 @@ export function ProtectedSidebar({ children, authButton }: { children: React.Rea
                     </div>
                 </SidebarBody>
             </Sidebar>
-            <div className="flex flex-1">
+            <div className="flex flex-1 overflow-hidden">
                 <div className="flex flex-col w-full h-full">
                     <main className="flex-1 p-4 md:p-8 overflow-auto bg-background">
                         {children}

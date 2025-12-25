@@ -32,6 +32,8 @@ export interface LeadServiceContext {
 export interface CreateLeadResult {
   lead: Lead;
   qualification: QualificationResult;
+  isUpdate: boolean; // Was this an upsert update?
+  previousData?: Partial<Lead>; // Previous values if updated
 }
 
 export class LeadService {
@@ -80,14 +82,70 @@ export class LeadService {
 
   /**
    * Create a new lead with automatic qualification
+   * Implements upsert: if a matching lead exists (by IC, phone, or email), update instead
    */
   async create(input: CreateLeadInput, ctx: LeadServiceContext): Promise<CreateLeadResult> {
     const pricingRules = await this.getPricingRules();
+
+    // Check for existing lead by identifiers (upsert logic)
+    const existingLead = await this.leadRepo.findByIdentifiers(
+      input.phone,
+      input.ic_number,
+      input.email
+    );
+
+    if (existingLead) {
+      // Lead exists - check ownership
+      if (existingLead.agent_id !== ctx.userId) {
+        // Different agent owns this lead - not allowed to update
+        throw new ForbiddenError(
+          'This contact already exists and belongs to another agent. Contact your agency admin for reassignment.'
+        );
+      }
+
+      // Same agent - perform upsert update
+      const previousData: Partial<Lead> = {
+        monthly_income_min: existingLead.monthly_income_min,
+        monthly_income_max: existingLead.monthly_income_max,
+        budget_min: existingLead.budget_min,
+        budget_max: existingLead.budget_max,
+        preferred_city: existingLead.preferred_city,
+        preferred_areas: existingLead.preferred_areas,
+      };
+
+      // Qualify with merged data
+      const qualificationResult = qualifyLead(input, pricingRules);
+
+      // Build update payload - preserve existing data where new is undefined
+      const updatePayload = {
+        ...input,
+        qualification_score: qualificationResult.score,
+        qualification_status: qualificationResult.status,
+        financing_readiness: qualificationResult.financingReadiness,
+        suggested_areas: qualificationResult.suggestedAreas,
+        qualification_breakdown: qualificationResult.breakdown,
+      };
+
+      const lead = await this.leadRepo.update(existingLead.id, updatePayload);
+
+      // Log upsert event
+      await this.eventRepo.createAsync({
+        lead_id: lead.id,
+        agent_id: ctx.userId,
+        event_type: 'upserted',
+        event_data: {
+          previous_values: previousData,
+          updated_fields: Object.keys(input),
+        },
+        notes: 'Lead updated via upsert (returning contact)',
+      });
+
+      return { lead, qualification: qualificationResult, isUpdate: true, previousData };
+    }
     
-    // Qualify the lead
+    // No match - create new lead
     const qualificationResult = qualifyLead(input, pricingRules);
 
-    // Create the lead
     const lead = await this.leadRepo.create({
       agent_id: ctx.userId,
       ...input,
@@ -106,7 +164,7 @@ export class LeadService {
       event_data: { qualification_score: qualificationResult.score },
     });
 
-    return { lead, qualification: qualificationResult };
+    return { lead, qualification: qualificationResult, isUpdate: false };
   }
 
   /**

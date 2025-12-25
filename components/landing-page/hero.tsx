@@ -21,11 +21,11 @@ export function Hero() {
                 <div className="flex flex-col items-center text-center space-y-8">
 
                     <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight max-w-3xl">
-                        Stop Wasting Time on <span className="text-primary">Unqualified</span> Leads
+                        Know Exactly When Clients Are <span className="text-primary">Ready to Upgrade</span>
                     </h1>
                     <p className="text-xl text-muted-foreground max-w-[700px]">
-                        PropFit helps real estate agents pre-qualify leads instantly.
-                        Get detailed financial insights, move-in timelines, and budget data before you ever pick up the phone.
+                        PropFit helps real estate agents detect upgrade opportunities in their existing client base.
+                        Get upgrade readiness scores, property anniversary alerts, and the perfect talking points.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 min-w-[300px]">
                         <Button asChild size="lg" className="h-12 px-8 text-lg">

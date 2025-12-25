@@ -26,7 +26,7 @@ export default async function LeadPage({ params }: LeadPageProps) {
   const events = await getLeadEvents(id);
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full">
       <LeadDetail lead={lead} events={events} />
     </div>
   );

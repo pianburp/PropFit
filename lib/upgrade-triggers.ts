@@ -145,6 +145,25 @@ export function detectUpgradeTriggers(
     });
   }
 
+  // 6. Check for property ownership anniversary
+  const anniversaryResult = checkPropertyAnniversary(currentLead);
+  if (anniversaryResult) {
+    triggers.push({
+      type: anniversaryResult.alertType,
+      triggered_at: now,
+      reason: anniversaryResult.reason,
+    });
+    alerts.push({
+      lead_id: currentLead.id,
+      alert_type: anniversaryResult.alertType,
+      title: anniversaryResult.title,
+      description: anniversaryResult.description,
+      suggested_action: anniversaryResult.suggestedAction,
+      is_read: false,
+      is_dismissed: false,
+    });
+  }
+
   return {
     isUpgradeReady: triggers.length > 0,
     triggers,
@@ -294,6 +313,50 @@ function checkRentToBuyReadiness(lead: Lead): TriggerResult | null {
 }
 
 // ============================================
+// Property Anniversary Checker
+// ============================================
+
+interface AnniversaryTriggerResult extends TriggerResult {
+  alertType: 'property_anniversary_3yr' | 'property_anniversary_5yr';
+  title: string;
+}
+
+function checkPropertyAnniversary(lead: Lead): AnniversaryTriggerResult | null {
+  // Skip if no purchase year recorded
+  if (!lead.current_property_purchase_year) return null;
+  
+  // Skip if not a property owner (intent is rent and no current property)
+  if (lead.intent === 'rent' && !lead.current_property_type) return null;
+  
+  const currentYear = new Date().getFullYear();
+  const yearsOwned = currentYear - lead.current_property_purchase_year;
+  
+  // 3-year anniversary - common upgrade consideration point
+  if (yearsOwned === 3) {
+    return {
+      alertType: 'property_anniversary_3yr',
+      title: '🏠 3-Year Property Anniversary',
+      reason: `${yearsOwned} years since property purchase`,
+      description: `${lead.name} has owned their property for 3 years. This is a common point where homeowners start considering upgrades as equity has grown and lifestyle needs may have changed.`,
+      suggestedAction: 'Reach out to discuss their current situation. Ask about family changes, space needs, or investment goals. Good time to start planting upgrade seeds.',
+    };
+  }
+  
+  // 5-year anniversary - refinancing window + significant equity
+  if (yearsOwned === 5) {
+    return {
+      alertType: 'property_anniversary_5yr',
+      title: '🔑 5-Year Property Anniversary',
+      reason: `${yearsOwned} years since property purchase - refinancing window`,
+      description: `${lead.name} has owned their property for 5 years. Lock-in periods typically end around this time, and significant equity has likely built up. Prime upgrade candidate.`,
+      suggestedAction: 'Priority follow-up. Discuss refinancing options and upgrade paths. The 5-year mark is the ideal window for property upgrades.',
+    };
+  }
+  
+  return null;
+}
+
+// ============================================
 // Batch Trigger Check (for scheduled jobs)
 // ============================================
 
@@ -305,6 +368,8 @@ export function getUpgradeAlertMessage(alertType: UpgradeAlertType): string {
     higher_tier_interest: 'Showing interest in higher budget range',
     rent_to_buy_ready: 'Renter with strong buying potential',
     readiness_state_changed: 'Upgrade readiness state has changed',
+    property_anniversary_3yr: '3-year property anniversary - good time to discuss upgrade',
+    property_anniversary_5yr: '5-year property anniversary - prime upgrade window',
   };
   return messages[alertType];
 }

@@ -11,7 +11,7 @@ export default async function NewLeadPage() {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Add New Lead</h1>
         <p className="text-muted-foreground">

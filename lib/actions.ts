@@ -93,7 +93,13 @@ export async function updateAgent(data: Partial<Agent>): Promise<{ success: bool
 // Lead Actions
 // ============================================
 
-export async function createLead(input: CreateLeadInput): Promise<{ success: boolean; lead?: Lead; error?: string }> {
+export async function createLead(input: CreateLeadInput): Promise<{ 
+  success: boolean; 
+  lead?: Lead; 
+  isUpdate?: boolean;
+  previousData?: Partial<Lead>;
+  error?: string;
+}> {
   try {
     const context = await getServiceContext();
     if (!context) return { success: false, error: 'Not authenticated' };
@@ -102,7 +108,13 @@ export async function createLead(input: CreateLeadInput): Promise<{ success: boo
     const result = await leadService.create(input, context.ctx);
 
     revalidatePath('/protected/leads');
-    return { success: true, lead: result.lead };
+    revalidatePath(`/protected/leads/${result.lead.id}`);
+    return { 
+      success: true, 
+      lead: result.lead, 
+      isUpdate: result.isUpdate,
+      previousData: result.previousData,
+    };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }

@@ -31,7 +31,7 @@ export function CTA() {
                             markers={MAP_MARKERS}
                             markerColor="#F59E0B"
                             dotRadius={0.3}
-                            mapSamples={8000}
+                            mapSamples={2500}
                         />
                     </div>
 

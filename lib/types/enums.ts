@@ -337,7 +337,9 @@ export type UpgradeAlertType =
   | 'lease_ending'
   | 'higher_tier_interest'
   | 'rent_to_buy_ready'
-  | 'readiness_state_changed';
+  | 'readiness_state_changed'
+  | 'property_anniversary_3yr'
+  | 'property_anniversary_5yr';
 
 // ============================================
 // Conversation Timeline
@@ -395,13 +397,21 @@ export type ObjectionCategory =
   | 'spouse_concern'
   | 'parent_advice'
   | 'commitment_fear'
-  | 'timing_uncertainty';
+  | 'timing_uncertainty'
+  | 'interest_rates_high'    // Upgrader-specific
+  | 'waiting_market_drop'    // Upgrader-specific
+  | 'kids_school_concern'    // Upgrader-specific
+  | 'current_loan_not_paid'; // Upgrader-specific
 
 export const OBJECTION_CATEGORY_LABELS: Record<ObjectionCategory, string> = {
   spouse_concern: 'Spouse Concern',
   parent_advice: 'Parent Advice',
   commitment_fear: 'Commitment Fear',
   timing_uncertainty: 'Timing Uncertainty',
+  interest_rates_high: 'Interest Rates Too High',
+  waiting_market_drop: 'Waiting for Market Drop',
+  kids_school_concern: "Kids' School Concern",
+  current_loan_not_paid: 'Current Loan Not Paid Off',
 };
 
 // ============================================

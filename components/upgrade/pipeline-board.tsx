@@ -4,14 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/animate-ui/components/radix/tabs';
 import {
     Card,
     CardContent,
-    CardHeader,
-    CardTitle,
 } from '@/components/ui/card';
 import {
     Dialog,
@@ -33,7 +31,6 @@ import {
     type UpgradeStage,
     type LostReasonType,
     UPGRADE_STAGE_LABELS,
-    UPGRADE_STAGE_COLORS,
     UPGRADE_STAGE_ORDER,
     UPGRADE_READINESS_COLORS,
     UPGRADE_READINESS_LABELS,
@@ -66,24 +63,27 @@ export function PipelineBoard({ clientsByStage }: PipelineBoardProps) {
     const windowOpenClients = clientsByStage['window_open'] || [];
     const planningClients = clientsByStage['planning'] || [];
     const activeClients = [...windowOpenClients, ...planningClients];
-    
+
     const totalOpportunityValue = activeClients.reduce((sum, client) => {
         return sum + (client.upgrade_budget_max || client.budget_max || 0);
     }, 0);
-    
+
     // Estimate commission (3% for sell + buy double transaction)
     const estimatedCommission = totalOpportunityValue * 0.03;
-    
+
     // Count clients with family alignment issues
     const familyAlignmentIssues = activeClients.filter(
         c => c.family_alignment_status === 'family_objection' || c.family_alignment_status === 'spouse_pending'
     ).length;
 
+    // Get stage counts for tab badges
+    const getStageCounts = (stage: UpgradeStage) => (clientsByStage[stage] || []).length;
+
     return (
         <div className="space-y-6">
             {/* Opportunity Summary Bar */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="bg-primary/5 border-primary/20">
+                <Card>
                     <CardContent className="p-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-primary/10">
@@ -96,11 +96,11 @@ export function PipelineBoard({ clientsByStage }: PipelineBoardProps) {
                         </div>
                     </CardContent>
                 </Card>
-                
-                <Card className="bg-success/5 border-success/20">
+
+                <Card>
                     <CardContent className="p-4">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-success/10">
+                            <div className="p-2 rounded-lg bg-muted">
                                 <DollarSign className="w-5 h-5 text-success" />
                             </div>
                             <div>
@@ -110,11 +110,11 @@ export function PipelineBoard({ clientsByStage }: PipelineBoardProps) {
                         </div>
                     </CardContent>
                 </Card>
-                
-                <Card className="bg-chart-4/5 border-chart-4/20">
+
+                <Card>
                     <CardContent className="p-4">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-chart-4/10">
+                            <div className="p-2 rounded-lg bg-muted">
                                 <TrendingUp className="w-5 h-5 text-chart-4" />
                             </div>
                             <div>
@@ -124,16 +124,16 @@ export function PipelineBoard({ clientsByStage }: PipelineBoardProps) {
                         </div>
                     </CardContent>
                 </Card>
-                
+
                 {familyAlignmentIssues > 0 && (
-                    <Card className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
+                    <Card>
                         <CardContent className="p-4">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                                    <Users className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                                <div className="p-2 rounded-lg bg-muted">
+                                    <Users className="w-5 h-5 text-destructive" />
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{familyAlignmentIssues}</div>
+                                    <div className="text-2xl font-bold text-destructive">{familyAlignmentIssues}</div>
                                     <div className="text-xs text-muted-foreground">Family Alignment Issues</div>
                                 </div>
                             </div>
@@ -142,56 +142,96 @@ export function PipelineBoard({ clientsByStage }: PipelineBoardProps) {
                 )}
             </div>
 
-            {/* Pipeline Columns */}
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {/* Pipeline Tabs - Animated */}
+            <Tabs defaultValue="monitoring" className="w-full">
+                <TabsList className="w-full h-auto p-1">
+                    {UPGRADE_STAGE_ORDER.map((stage) => (
+                        <TabsTrigger
+                            key={stage}
+                            value={stage}
+                            className="flex items-center gap-2 px-4 py-2"
+                        >
+                            {getStageIcon(stage)}
+                            <span className="hidden sm:inline">{UPGRADE_STAGE_LABELS[stage]}</span>
+                            <span className="sm:hidden">{getShortStageLabel(stage)}</span>
+                            <Badge
+                                variant="secondary"
+                                className={`ml-1 text-xs h-5 px-1.5 ${getTabBadgeColor(stage)}`}
+                            >
+                                {getStageCounts(stage)}
+                            </Badge>
+                        </TabsTrigger>
+                    ))}
+                </TabsList>
+
                 {UPGRADE_STAGE_ORDER.map((stage) => (
-                    <PipelineColumn
-                        key={stage}
-                        stage={stage}
-                        clients={clientsByStage[stage] || []}
-                    />
+                    <TabsContent key={stage} value={stage} className="mt-4">
+                        <PipelineStageContent
+                            stage={stage}
+                            clients={clientsByStage[stage] || []}
+                        />
+                    </TabsContent>
+                ))}
+            </Tabs>
+        </div>
+    );
+}
+
+// Helper functions for tabs
+function getShortStageLabel(stage: UpgradeStage): string {
+    switch (stage) {
+        case 'monitoring': return 'Monitor';
+        case 'window_open': return 'Open';
+        case 'planning': return 'Plan';
+        case 'executed': return 'Done';
+        case 'lost': return 'Lost';
+    }
+}
+
+function getTabBadgeColor(stage: UpgradeStage): string {
+    switch (stage) {
+        case 'monitoring': return 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200';
+        case 'window_open': return 'bg-primary/20 text-primary';
+        case 'planning': return 'bg-amber-200 dark:bg-amber-900 text-amber-700 dark:text-amber-200';
+        case 'executed': return 'bg-emerald-200 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200';
+        case 'lost': return 'bg-red-200 dark:bg-red-900 text-red-700 dark:text-red-200';
+    }
+}
+
+interface PipelineStageContentProps {
+    stage: UpgradeStage;
+    clients: Lead[];
+}
+
+function PipelineStageContent({ stage, clients }: PipelineStageContentProps) {
+    const stageColor = getStageColumnColor(stage);
+
+    if (clients.length === 0) {
+        return (
+            <Card className={`${stageColor} border-dashed`}>
+                <CardContent className="p-8 text-center">
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        {getStageIcon(stage)}
+                        <p className="text-sm">No clients in {UPGRADE_STAGE_LABELS[stage]}</p>
+                        <p className="text-xs">Clients will appear here when moved to this stage</p>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <div className={`rounded-lg border ${stageColor} p-4`}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {clients.map((client) => (
+                    <PipelineClientCard key={client.id} client={client} currentStage={stage} />
                 ))}
             </div>
         </div>
     );
 }
 
-interface PipelineColumnProps {
-    stage: UpgradeStage;
-    clients: Lead[];
-}
 
-function PipelineColumn({ stage, clients }: PipelineColumnProps) {
-    const stageIcon = getStageIcon(stage);
-    const stageColor = getStageColumnColor(stage);
-
-    return (
-        <div className={`rounded-lg border ${stageColor} min-h-[400px]`}>
-            <div className="p-3 border-b bg-background/80 backdrop-blur sticky top-0">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        {stageIcon}
-                        <span className="font-medium text-sm">{UPGRADE_STAGE_LABELS[stage]}</span>
-                    </div>
-                    <Badge variant="secondary" className="text-xs">
-                        {clients.length}
-                    </Badge>
-                </div>
-            </div>
-            <div className="p-2 space-y-2">
-                {clients.length === 0 ? (
-                    <p className="text-muted-foreground text-sm text-center py-8">
-                        No clients
-                    </p>
-                ) : (
-                    clients.map((client) => (
-                        <PipelineClientCard key={client.id} client={client} currentStage={stage} />
-                    ))
-                )}
-            </div>
-        </div>
-    );
-}
 
 interface PipelineClientCardProps {
     client: Lead;
@@ -227,7 +267,7 @@ function PipelineClientCard({ client, currentStage }: PipelineClientCardProps) {
 
     const handleMarkAsLost = async () => {
         if (!lostReason) return;
-        
+
         setIsMoving(true);
         await markLeadAsLost(client.id, lostReason, lostNotes);
         setShowLostDialog(false);
@@ -331,7 +371,7 @@ function PipelineClientCard({ client, currentStage }: PipelineClientCardProps) {
                             Understanding why deals don&apos;t close helps improve your upgrade process.
                         </DialogDescription>
                     </DialogHeader>
-                    
+
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
                             <Label>Why did this upgrade opportunity not proceed? *</Label>
@@ -348,7 +388,7 @@ function PipelineClientCard({ client, currentStage }: PipelineClientCardProps) {
                                 </SelectContent>
                             </Select>
                         </div>
-                        
+
                         <div className="space-y-2">
                             <Label htmlFor="lostNotes">Additional Notes</Label>
                             <Textarea
@@ -360,13 +400,13 @@ function PipelineClientCard({ client, currentStage }: PipelineClientCardProps) {
                             />
                         </div>
                     </div>
-                    
+
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setShowLostDialog(false)}>
                             Cancel
                         </Button>
-                        <Button 
-                            variant="destructive" 
+                        <Button
+                            variant="destructive"
                             onClick={handleMarkAsLost}
                             disabled={!lostReason || isMoving}
                         >

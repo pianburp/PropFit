@@ -32,6 +32,7 @@ export interface DashboardStats {
   clients_approaching_equity_threshold?: Lead[];
   lease_endings_next_90_days?: Lead[];
   high_income_growth_clients?: Lead[];
+  property_anniversary_clients?: Array<Lead & { years_owned: number }>; // 3yr and 5yr anniversaries
 
   // Conversion Tracking
   conversion_rate_window_to_executed?: number;

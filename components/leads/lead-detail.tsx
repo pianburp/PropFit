@@ -19,7 +19,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/animate-ui/components/radix/tabs';
 import { updateLeadStatus, deleteLead, logContact } from '@/lib/actions';
 import {
   type Lead,
@@ -76,6 +86,11 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Log Contact State
+  const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
+  const [contactNotes, setContactNotes] = useState('');
+  const [loggingContact, setLoggingContact] = useState(false);
+
   const handleStatusChange = async (newStatus: LeadStatus) => {
     setUpdating(true);
     try {
@@ -98,9 +113,20 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
     }
   };
 
-  const handleLogContact = async () => {
-    await logContact(lead.id);
-    router.refresh();
+  const handleLogContactClick = () => {
+    setIsContactDialogOpen(true);
+  };
+
+  const handleSaveContact = async () => {
+    setLoggingContact(true);
+    try {
+      await logContact(lead.id, contactNotes);
+      setIsContactDialogOpen(false);
+      setContactNotes('');
+      router.refresh();
+    } finally {
+      setLoggingContact(false);
+    }
   };
 
   const avgIncome = (lead.monthly_income_min + lead.monthly_income_max) / 2;
@@ -152,7 +178,7 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
             </SelectContent>
           </Select>
 
-          <Button variant="outline" size="icon" onClick={handleLogContact} title="Log Contact">
+          <Button variant="outline" size="icon" onClick={handleLogContactClick} title="Log Contact">
             <MessageSquare className="w-4 h-4" />
           </Button>
 
@@ -218,7 +244,7 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
       </Card>
 
       <Tabs defaultValue="details" className="space-y-4">
-        <TabsList>
+        <TabsList className="w-full">
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="analysis">Analysis</TabsTrigger>
           <TabsTrigger value="upgrade-tools">Upgrade Tools</TabsTrigger>
@@ -503,6 +529,36 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Log Contact Dialog */}
+      <Dialog open={isContactDialogOpen} onOpenChange={setIsContactDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Log Contact</DialogTitle>
+            <DialogDescription>
+              Record details about your interaction with this lead.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="contact-notes">Notes</Label>
+              <Textarea
+                id="contact-notes"
+                placeholder="Called client, discussed..."
+                value={contactNotes}
+                onChange={(e) => setContactNotes(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsContactDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveContact} disabled={loggingContact}>
+              {loggingContact ? 'Saving...' : 'Save Log'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

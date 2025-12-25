@@ -34,6 +34,7 @@ export interface CreateLeadInput {
   move_in_timeline: MoveInTimeline;
 
   // Optional fields
+  ic_number?: string; // Malaysian IC/NRIC for unique identification
   employment_type?: EmploymentType;
   years_in_current_job?: number;
   existing_loan_commitment_percent?: number;

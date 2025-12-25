@@ -149,4 +149,56 @@ export class LeadRepository implements ILeadRepository {
 
     return (data || []) as Lead[];
   }
+
+  /**
+   * Find a lead by identifiers for upsert matching.
+   * Priority: IC (strongest) → Phone → Email
+   */
+  async findByIdentifiers(
+    phone: string,
+    ic?: string,
+    email?: string
+  ): Promise<Lead | null> {
+    // Priority 1: Match by IC (strongest identifier)
+    if (ic) {
+      const { data: icMatch } = await this.supabase
+        .from('leads')
+        .select('*')
+        .eq('ic_number', ic)
+        .limit(1)
+        .maybeSingle();
+
+      if (icMatch) {
+        return icMatch as Lead;
+      }
+    }
+
+    // Priority 2: Match by phone (primary, required field)
+    const { data: phoneMatch } = await this.supabase
+      .from('leads')
+      .select('*')
+      .eq('phone', phone)
+      .limit(1)
+      .maybeSingle();
+
+    if (phoneMatch) {
+      return phoneMatch as Lead;
+    }
+
+    // Priority 3: Match by email (secondary, if provided)
+    if (email) {
+      const { data: emailMatch } = await this.supabase
+        .from('leads')
+        .select('*')
+        .eq('email', email)
+        .limit(1)
+        .maybeSingle();
+
+      if (emailMatch) {
+        return emailMatch as Lead;
+      }
+    }
+
+    return null;
+  }
 }

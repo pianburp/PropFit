@@ -11,6 +11,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ROICalculator } from "./roi-calculator";
 
 export function Pricing() {
     return (
@@ -106,6 +107,11 @@ export function Pricing() {
                 <div className="mt-12 text-center text-sm text-muted-foreground space-y-2">
                     <p>Flat monthly subscription. No commission fees. Cancel anytime.</p>
                     <p className="text-xs">Prices in MYR. All plans include email support.</p>
+                </div>
+
+                {/* Conservative ROI Calculator */}
+                <div className="mt-16 max-w-3xl mx-auto">
+                    <ROICalculator />
                 </div>
             </div>
         </section>
