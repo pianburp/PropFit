@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Checkbox } from '@/components/animate-ui/components/radix/checkbox';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -59,7 +60,8 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('contact');
+  // Use ref to store current tab for programmatic navigation buttons
+  const tabsRef = useRef<HTMLDivElement>(null);
 
   // Form state - Contact
   const [name, setName] = useState(lead?.name || '');
@@ -255,7 +257,7 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
         </div>
       )}
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs defaultValue="contact" className="w-full" ref={tabsRef}>
         <TabsList className="grid w-full grid-cols-5 mb-4">
           <TabsTrigger value="contact" className="flex items-center gap-2">
             <User className="h-4 w-4" />
@@ -337,7 +339,10 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
             </Card>
 
             <div className="flex justify-end">
-              <Button type="button" onClick={() => setActiveTab('property')}>
+              <Button type="button" onClick={() => {
+                const trigger = tabsRef.current?.querySelector('[data-slot="tabs-trigger"][value="property"]') as HTMLButtonElement;
+                trigger?.click();
+              }}>
                 Next: Property Requirements →
               </Button>
             </div>
@@ -441,17 +446,18 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
                   <div className="space-y-3 pt-4 border-t">
                     <Label>Preferred Areas (Select one or more)</Label>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-                      {availableAreas.map((area) => (
-                        <div
+                      {availableAreas.map((area) => {
+                        const isSelected = preferredAreas.includes(area.value);
+                        return (
+                        <label
                           key={area.value}
-                          className={`flex items-center space-x-2 p-2 rounded border cursor-pointer transition-colors ${preferredAreas.includes(area.value)
+                          className={`flex items-center space-x-2 p-2 rounded border cursor-pointer transition-colors ${isSelected
                             ? 'bg-primary/10 border-primary'
                             : 'border-input hover:bg-muted'
                             }`}
-                          onClick={() => handleAreaToggle(area.value)}
                         >
                           <Checkbox
-                            checked={preferredAreas.includes(area.value)}
+                            checked={isSelected}
                             onCheckedChange={() => handleAreaToggle(area.value)}
                           />
                           <span className="text-sm truncate">
@@ -462,8 +468,9 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
                               ({area.tier})
                             </span>
                           </span>
-                        </div>
-                      ))}
+                        </label>
+                      );
+                      })}
                     </div>
                     {preferredAreas.length > 0 && (
                       <div className="flex flex-wrap gap-1 pt-2">
@@ -481,10 +488,16 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
             </Card>
 
             <div className="flex justify-between">
-              <Button type="button" variant="outline" onClick={() => setActiveTab('contact')}>
+              <Button type="button" variant="outline" onClick={() => {
+                const trigger = tabsRef.current?.querySelector('[data-slot="tabs-trigger"][value="contact"]') as HTMLButtonElement;
+                trigger?.click();
+              }}>
                 ← Back
               </Button>
-              <Button type="button" onClick={() => setActiveTab('financial')}>
+              <Button type="button" onClick={() => {
+                const trigger = tabsRef.current?.querySelector('[data-slot="tabs-trigger"][value="financial"]') as HTMLButtonElement;
+                trigger?.click();
+              }}>
                 Next: Financial Info →
               </Button>
             </div>
@@ -585,10 +598,16 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
             </Card>
 
             <div className="flex justify-between">
-              <Button type="button" variant="outline" onClick={() => setActiveTab('property')}>
+              <Button type="button" variant="outline" onClick={() => {
+                const trigger = tabsRef.current?.querySelector('[data-slot="tabs-trigger"][value="property"]') as HTMLButtonElement;
+                trigger?.click();
+              }}>
                 ← Back
               </Button>
-              <Button type="button" onClick={() => setActiveTab('upgrade')}>
+              <Button type="button" onClick={() => {
+                const trigger = tabsRef.current?.querySelector('[data-slot="tabs-trigger"][value="upgrade"]') as HTMLButtonElement;
+                trigger?.click();
+              }}>
                 Next: Upgrade Analysis →
               </Button>
             </div>
@@ -771,11 +790,11 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="pendingMilestoneDate" className="text-xs">Expected Date</Label>
-                      <Input
+                      <DatePicker
                         id="pendingMilestoneDate"
-                        type="date"
                         value={pendingMilestoneDate}
-                        onChange={(e) => setPendingMilestoneDate(e.target.value)}
+                        onChange={(date) => setPendingMilestoneDate(date ? date.toISOString().split('T')[0] : '')}
+                        placeholder="Select date"
                         className="h-9"
                       />
                     </div>
@@ -802,22 +821,24 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="grid grid-cols-2 gap-2">
-                    {Object.entries(UPGRADE_INTENT_LABELS).map(([value, label]) => (
-                      <div
+                    {Object.entries(UPGRADE_INTENT_LABELS).map(([value, label]) => {
+                      const isSelected = upgradeIntentSignals.includes(value as UpgradeIntentSignal);
+                      return (
+                      <label
                         key={value}
-                        className={`flex items-center space-x-2 p-2 rounded border cursor-pointer transition-colors ${upgradeIntentSignals.includes(value as UpgradeIntentSignal)
+                        className={`flex items-center space-x-2 p-2 rounded border cursor-pointer transition-colors ${isSelected
                           ? 'bg-amber-500/10 border-amber-500'
                           : 'border-input hover:bg-muted'
                           }`}
-                        onClick={() => handleIntentSignalToggle(value as UpgradeIntentSignal)}
                       >
                         <Checkbox
-                          checked={upgradeIntentSignals.includes(value as UpgradeIntentSignal)}
+                          checked={isSelected}
                           onCheckedChange={() => handleIntentSignalToggle(value as UpgradeIntentSignal)}
                         />
                         <span className="text-xs">{label}</span>
-                      </div>
-                    ))}
+                      </label>
+                    );
+                    })}
                   </div>
 
                   {upgradeIntentSignals.length > 0 && (
@@ -846,10 +867,16 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
             </div>
 
             <div className="flex justify-between">
-              <Button type="button" variant="outline" onClick={() => setActiveTab('financial')}>
+              <Button type="button" variant="outline" onClick={() => {
+                const trigger = tabsRef.current?.querySelector('[data-slot="tabs-trigger"][value="financial"]') as HTMLButtonElement;
+                trigger?.click();
+              }}>
                 ← Back
               </Button>
-              <Button type="button" onClick={() => setActiveTab('notes')}>
+              <Button type="button" onClick={() => {
+                const trigger = tabsRef.current?.querySelector('[data-slot="tabs-trigger"][value="notes"]') as HTMLButtonElement;
+                trigger?.click();
+              }}>
                 Next: Notes →
               </Button>
             </div>
@@ -866,11 +893,11 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="leaseEndDate">Current Lease End Date</Label>
-                    <Input
+                    <DatePicker
                       id="leaseEndDate"
-                      type="date"
                       value={leaseEndDate}
-                      onChange={(e) => setLeaseEndDate(e.target.value)}
+                      onChange={(date) => setLeaseEndDate(date ? date.toISOString().split('T')[0] : '')}
+                      placeholder="Select lease end date"
                     />
                   </div>
                 </div>
@@ -919,7 +946,10 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
             </Card>
 
             <div className="flex justify-between">
-              <Button type="button" variant="outline" onClick={() => setActiveTab('upgrade')}>
+              <Button type="button" variant="outline" onClick={() => {
+                const trigger = tabsRef.current?.querySelector('[data-slot="tabs-trigger"][value="upgrade"]') as HTMLButtonElement;
+                trigger?.click();
+              }}>
                 ← Back
               </Button>
               <div className="flex gap-2">

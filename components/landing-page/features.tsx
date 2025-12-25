@@ -1,4 +1,3 @@
-
 import {
     TrendingUp,
     ShieldCheck,
@@ -53,6 +52,8 @@ export function Features() {
                         You know upgrades make money. Now get the safe, structured system that tells you when, how, and whether you should do it.
                     </p>
                 </div>
+
+                {/* Feature Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {features.map((feature, index) => (
                         <div key={index} className="flex flex-col items-start p-6 bg-background rounded-xl shadow-sm border hover:shadow-md transition-shadow">

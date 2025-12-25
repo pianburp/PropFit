@@ -1,29 +1,29 @@
--- Seed 100 Test Leads for PropFit Testing
--- Run this migration after setting up an agent account
--- Replace 'YOUR_AGENT_UUID' with your actual agent ID from Supabase auth.users
+-- ============================================
+-- DEPRECATED: Old Seed File
+-- Use 008_consolidated_schema_and_seed.sql instead
+-- ============================================
+-- This file has been deprecated because:
+-- 1. Area values used display names instead of snake_case (e.g., "Mont Kiara" instead of "mont_kiara")
+-- 2. Missing upgrade management fields (current_property, family_alignment, etc.)
+-- 3. Income/budget calculations did not match application logic
+-- 
+-- DO NOT RUN THIS FILE. Run 008_consolidated_schema_and_seed.sql instead.
+-- ============================================
 
--- ============================================
--- HELPER: Create test agent if not exists
--- ============================================
--- First, we need a test agent. This query assumes you have a user in auth.users.
--- Get your user ID from Supabase Dashboard > Authentication > Users
--- Then insert into agents table if not already there:
+-- Original code preserved below but will not execute
+-- The DO block below simply shows a notice and exits
 
--- INSERT INTO agents (id, full_name, phone, agency_name, license_number, preferred_cities, subscription_status)
--- VALUES (
---     'YOUR_AGENT_UUID'::UUID,
---     'Test Agent',
---     '+60123456789',
---     'PropFit Realty',
---     'REN12345',
---     ARRAY['klang_valley', 'penang', 'johor_bahru'],
---     'active'
--- ) ON CONFLICT (id) DO NOTHING;
+DO $$
+BEGIN
+    RAISE NOTICE '⚠️  This seed file (005) is DEPRECATED.';
+    RAISE NOTICE '➡️  Please run 008_consolidated_schema_and_seed.sql instead.';
+    RAISE NOTICE '    The new seed file uses correct snake_case area values and includes all upgrade fields.';
+    RETURN;
+END $$;
 
+/*
+-- ORIGINAL DEPRECATED CODE (kept for reference only)
 -- ============================================
--- SEED 100 LEADS
--- ============================================
--- IMPORTANT: Replace 'YOUR_AGENT_UUID' below with your actual agent UUID
 
 DO $$
 DECLARE
@@ -35,7 +35,7 @@ DECLARE
     chinese_names TEXT[] := ARRAY['Tan Wei Ming', 'Lee Chong Wei', 'Wong Kah Wai', 'Lim Mei Ling', 'Ng Siew Mei', 'Chan Kok Leong', 'Goh Bee Ling', 'Ong Kim Huat', 'Low Yee Ling', 'Teh Soon Huat', 'Foo Mei Yen', 'Yeoh Beng Kiat', 'Cheah Soo Lin', 'Koh Wei Liang', 'Sim Hui Ling', 'Chin Mei Fong', 'Lau Kok Wai', 'Yap Suk Mei', 'Hew Keng Soon', 'Pang Mei Yun'];
     indian_names TEXT[] := ARRAY['Rajesh Kumar', 'Suresh Nair', 'Anand Pillai', 'Priya Devi', 'Lakshmi Menon', 'Krishnan Muthu', 'Ganesh Rajan', 'Deepa Krishnan', 'Vikram Singh', 'Arjun Nair', 'Meera Devi', 'Santhosh Kumar', 'Revathi Nair', 'Balaji Rao', 'Kavitha Pillai'];
     
-    -- Areas for each city
+    -- PROBLEM: These used display names, not snake_case values!
     klang_valley_areas TEXT[] := ARRAY['Mont Kiara', 'Bangsar', 'KLCC', 'Damansara Heights', 'Sri Hartamas', 'Desa ParkCity', 'Bukit Jalil', 'Cheras', 'Kepong', 'Setapak', 'Puchong', 'Subang Jaya', 'Petaling Jaya', 'Shah Alam', 'Cyberjaya', 'Kajang', 'Ampang', 'Segambut', 'Sentul', 'Wangsa Maju'];
     penang_areas TEXT[] := ARRAY['George Town', 'Gurney Drive', 'Tanjung Bungah', 'Batu Ferringhi', 'Jelutong', 'Air Itam', 'Gelugor', 'Sungai Nibong', 'Bayan Lepas', 'Bukit Jambul', 'Queensbay', 'Butterworth', 'Seberang Jaya', 'Perai', 'Simpang Ampat'];
     johor_bahru_areas TEXT[] := ARRAY['Iskandar Puteri', 'Johor Bahru City', 'Mount Austin', 'Permas Jaya', 'Tebrau', 'Danga Bay', 'Bukit Indah', 'Taman Molek', 'Taman Sentosa', 'Skudai', 'Kulai', 'Pasir Gudang', 'Masai', 'Ulu Tiram', 'Senai'];
@@ -341,16 +341,6 @@ BEGIN
     RAISE NOTICE 'Successfully seeded 100 test leads for agent %', agent_uuid;
 END $$;
 
--- ============================================
--- VERIFICATION QUERY
--- ============================================
--- Run this to verify your leads were created:
--- SELECT 
---     status, 
---     qualification_status, 
---     preferred_city, 
---     intent, 
---     COUNT(*) 
--- FROM leads 
--- GROUP BY status, qualification_status, preferred_city, intent 
--- ORDER BY status, qualification_status;
+END OF DEPRECATED CODE
+*/
+

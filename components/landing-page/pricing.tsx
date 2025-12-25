@@ -108,11 +108,6 @@ export function Pricing() {
                     <p>Flat monthly subscription. No commission fees. Cancel anytime.</p>
                     <p className="text-xs">Prices in MYR. All plans include email support.</p>
                 </div>
-
-                {/* Conservative ROI Calculator */}
-                <div className="mt-16 max-w-3xl mx-auto">
-                    <ROICalculator />
-                </div>
             </div>
         </section>
     );

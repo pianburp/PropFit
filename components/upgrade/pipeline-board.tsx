@@ -52,6 +52,7 @@ import {
     DollarSign,
     AlertTriangle,
     Target,
+    Phone,
 } from 'lucide-react';
 
 interface PipelineBoardProps {
@@ -82,7 +83,7 @@ export function PipelineBoard({ clientsByStage }: PipelineBoardProps) {
     return (
         <div className="space-y-6">
             {/* Opportunity Summary Bar */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Card>
                     <CardContent className="p-4">
                         <div className="flex items-center gap-3">
@@ -125,21 +126,23 @@ export function PipelineBoard({ clientsByStage }: PipelineBoardProps) {
                     </CardContent>
                 </Card>
 
-                {familyAlignmentIssues > 0 && (
-                    <Card>
-                        <CardContent className="p-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-muted">
-                                    <Users className="w-5 h-5 text-destructive" />
+                <Card>
+                    <CardContent className="p-4">
+                        <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-lg ${familyAlignmentIssues > 0 ? 'bg-destructive/10' : 'bg-success/10'}`}>
+                                <Users className={`w-5 h-5 ${familyAlignmentIssues > 0 ? 'text-destructive' : 'text-success'}`} />
+                            </div>
+                            <div>
+                                <div className={`text-2xl font-bold ${familyAlignmentIssues > 0 ? 'text-destructive' : 'text-success'}`}>
+                                    {familyAlignmentIssues > 0 ? familyAlignmentIssues : 'All Good'}
                                 </div>
-                                <div>
-                                    <div className="text-2xl font-bold text-destructive">{familyAlignmentIssues}</div>
-                                    <div className="text-xs text-muted-foreground">Family Alignment Issues</div>
+                                <div className="text-xs text-muted-foreground">
+                                    {familyAlignmentIssues > 0 ? 'Alignment Issues' : 'Family Alignment'}
                                 </div>
                             </div>
-                        </CardContent>
-                    </Card>
-                )}
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Pipeline Tabs - Animated */}
@@ -281,58 +284,70 @@ function PipelineClientCard({ client, currentStage }: PipelineClientCardProps) {
 
     return (
         <>
-            <Card className={`cursor-pointer hover:shadow-md transition-shadow ${isStale ? 'border-amber-300 dark:border-amber-700' : ''}`}>
-                <CardContent className="p-3">
-                    <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1 min-w-0">
+            <Card className={`group cursor-pointer hover:shadow-lg transition-all duration-300 border-border/60 hover:border-primary/20 overflow-hidden ${isStale ? 'border-amber-300 dark:border-amber-700' : ''}`}>
+                <CardContent className="p-5">
+                    <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1 min-w-0 pr-3">
                             <Link
                                 href={`/protected/leads/${client.id}`}
-                                className="font-medium text-sm hover:underline truncate block"
+                                className="font-bold text-base hover:text-primary transition-colors truncate block"
                             >
                                 {client.name}
                             </Link>
-                            <p className="text-xs text-muted-foreground truncate">
-                                {client.phone}
-                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                                <div className="p-1 rounded-md bg-primary/10">
+                                    <Phone className="w-3 h-3 text-primary" />
+                                </div>
+                                <p className="text-xs text-muted-foreground truncate font-medium">
+                                    {client.phone}
+                                </p>
+                            </div>
                         </div>
-                        <Badge className={`text-xs ${UPGRADE_READINESS_COLORS[readinessState]}`}>
+                        <Badge className={`text-xs px-2 py-0.5 shadow-sm ${UPGRADE_READINESS_COLORS[readinessState]}`}>
                             {client.upgrade_readiness_score || 0}
                         </Badge>
                     </div>
 
                     {/* Family Alignment Indicator */}
                     {familyStatus && familyStatus !== 'not_discussed' && (
-                        <div className="mb-2">
-                            <Badge variant="outline" className={`text-xs ${FAMILY_ALIGNMENT_COLORS[familyStatus]}`}>
-                                <Users className="w-3 h-3 mr-1" />
+                        <div className="mb-3">
+                            <Badge variant="outline" className={`text-xs w-full justify-center py-1 ${FAMILY_ALIGNMENT_COLORS[familyStatus]}`}>
+                                <Users className="w-3 h-3 mr-1.5" />
                                 {FAMILY_ALIGNMENT_LABELS[familyStatus]}
                             </Badge>
                         </div>
                     )}
 
-                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                        <div className="flex items-center gap-1">
-                            <Clock className={`w-3 h-3 ${isStale ? 'text-amber-500' : ''}`} />
-                            <span className={isStale ? 'text-amber-500 font-medium' : ''}>{daysInStage}d</span>
-                            {isStale && <AlertTriangle className="w-3 h-3 text-amber-500 ml-1" />}
+                    <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mb-4">
+                        <div className="flex items-center gap-2 p-1.5 rounded-md bg-muted/40">
+                            <Clock className={`w-3.5 h-3.5 ${isStale ? 'text-amber-500' : 'text-orange-500'}`} />
+                            <span className={`font-medium ${isStale ? 'text-amber-500' : ''}`}>
+                                {daysInStage}d {isStale && 'Stale'}
+                            </span>
                         </div>
-                        <span className={UPGRADE_READINESS_COLORS[readinessState]}>
-                            {UPGRADE_READINESS_LABELS[readinessState]}
-                        </span>
+                        <div className="flex items-center gap-2 p-1.5 rounded-md bg-muted/40 justify-center">
+                            <span className={`font-medium ${UPGRADE_READINESS_COLORS[readinessState].replace('bg-', 'text-').split(' ')[0]}`}>
+                                {UPGRADE_READINESS_LABELS[readinessState]}
+                            </span>
+                        </div>
                     </div>
 
                     {/* Opportunity Value */}
                     {(client.upgrade_budget_max || client.budget_max) && (
-                        <div className="text-xs text-muted-foreground mb-2">
-                            <DollarSign className="w-3 h-3 inline" />
-                            {formatRM(client.upgrade_budget_max || client.budget_max)}
+                        <div className="flex items-center gap-2 mb-4 p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+                            <div className="p-1 rounded-full bg-emerald-500/10">
+                                <DollarSign className="w-3 h-3 text-emerald-600" />
+                            </div>
+                            <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                                {formatRM(client.upgrade_budget_max || client.budget_max)}
+                            </span>
                         </div>
                     )}
 
-                    <div className="flex gap-1">
-                        <Button asChild size="sm" variant="ghost" className="flex-1 h-7 text-xs">
+                    <div className="flex gap-2 pt-2 border-t border-border/50">
+                        <Button asChild size="sm" variant="ghost" className="flex-1 h-8 text-xs hover:bg-primary/5 hover:text-primary">
                             <Link href={`/protected/leads/${client.id}`}>
-                                <Eye className="w-3 h-3 mr-1" />
+                                <Eye className="w-3.5 h-3.5 mr-1.5" />
                                 View
                             </Link>
                         </Button>
@@ -340,11 +355,11 @@ function PipelineClientCard({ client, currentStage }: PipelineClientCardProps) {
                             <Button
                                 size="sm"
                                 variant="outline"
-                                className="flex-1 h-7 text-xs"
+                                className="flex-1 h-8 text-xs border-primary/20 hover:bg-primary/5 text-primary"
                                 onClick={handleMoveToNext}
                                 disabled={isMoving}
                             >
-                                <ChevronRight className="w-3 h-3 mr-1" />
+                                <ChevronRight className="w-3.5 h-3.5 mr-1.5" />
                                 Next
                             </Button>
                         )}
@@ -352,10 +367,10 @@ function PipelineClientCard({ client, currentStage }: PipelineClientCardProps) {
                             <Button
                                 size="sm"
                                 variant="ghost"
-                                className="h-7 text-xs text-destructive hover:text-destructive"
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
                                 onClick={() => setShowLostDialog(true)}
                             >
-                                <XCircle className="w-3 h-3" />
+                                <XCircle className="w-4 h-4" />
                             </Button>
                         )}
                     </div>

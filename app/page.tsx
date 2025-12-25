@@ -1,21 +1,11 @@
 
-import dynamic from "next/dynamic";
 import { Navbar } from "@/components/landing-page/navbar";
 import { Hero } from "@/components/landing-page/hero";
 import { Footer } from "@/components/landing-page/footer";
-import { FeaturesSkeleton, PricingSkeleton, CTASkeleton } from "@/components/landing-page/skeletons";
-
-const Features = dynamic(() => import("@/components/landing-page/features").then((mod) => mod.Features), {
-  loading: () => <FeaturesSkeleton />,
-});
-
-const Pricing = dynamic(() => import("@/components/landing-page/pricing").then((mod) => mod.Pricing), {
-  loading: () => <PricingSkeleton />,
-});
-
-const CTA = dynamic(() => import("@/components/landing-page/cta").then((mod) => mod.CTA), {
-  loading: () => <CTASkeleton />,
-});
+import { Features } from "@/components/landing-page/features";
+import { Pricing } from "@/components/landing-page/pricing";
+import { CTA } from "@/components/landing-page/cta";
+import { TestimonySection } from "@/components/landing-page/testimony-section";
 
 export default function LandingPage() {
   return (
@@ -25,6 +15,7 @@ export default function LandingPage() {
         <Hero />
         <Features />
         <Pricing />
+        <TestimonySection />
         <CTA />
       </main>
       <Footer />

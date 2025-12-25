@@ -195,24 +195,35 @@ export function LeadDetail({ lead, events }: LeadDetailProps) {
       </div>
 
       {/* Qualification Score Card */}
-      <Card className="border-2 border-primary/20">
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Qualification Score Card */}
+      <Card className="overflow-hidden border shadow-sm">
+        <CardContent className="p-0">
+          <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x">
             {/* Overall Score */}
-            <div className="text-center">
-              <div className="text-5xl font-bold mb-2">{lead.qualification_score}</div>
-              <Badge className={`text-base px-4 py-1 ${QUALIFICATION_STATUS_COLORS[lead.qualification_status]}`}>
-                {lead.qualification_status === 'qualified' && <CheckCircle className="w-4 h-4 mr-1" />}
-                {lead.qualification_status === 'stretch' && <AlertTriangle className="w-4 h-4 mr-1" />}
-                {lead.qualification_status === 'not_qualified' && <XCircle className="w-4 h-4 mr-1" />}
+            <div className="p-6 flex flex-col items-center justify-center bg-muted/30">
+              <div className="text-5xl font-bold mb-3 text-foreground">{lead.qualification_score}</div>
+              <Badge
+                variant="outline"
+                className={`text-sm px-3 py-1 font-medium border-2 ${lead.qualification_status === 'qualified' ? 'border-success/20 text-success bg-success/5' :
+                    lead.qualification_status === 'stretch' ? 'border-chart-3/20 text-chart-3 bg-chart-3/5' :
+                      'border-destructive/20 text-destructive bg-destructive/5'
+                  }`}
+              >
+                {lead.qualification_status === 'qualified' && <CheckCircle className="w-3 h-3 mr-1.5" />}
+                {lead.qualification_status === 'stretch' && <AlertTriangle className="w-3 h-3 mr-1.5" />}
+                {lead.qualification_status === 'not_qualified' && <XCircle className="w-3 h-3 mr-1.5" />}
                 {QUALIFICATION_STATUS_LABELS[lead.qualification_status]}
               </Badge>
+              <p className="text-xs text-muted-foreground mt-4 font-medium uppercase tracking-wider">Overall Score</p>
             </div>
 
             {/* Score Breakdown */}
-            <div className="md:col-span-3">
-              <h4 className="font-medium mb-3">Score Breakdown</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="md:col-span-3 p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Score Breakdown</h4>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <ScoreItem
                   icon={<CreditCard className="w-4 h-4" />}
                   label="Income"
@@ -591,13 +602,28 @@ function ScoreItem({
   };
 
   return (
-    <div className="text-center p-3 bg-muted/50 rounded-lg">
-      <div className="flex items-center justify-center gap-1 mb-1 text-muted-foreground">
-        {icon}
-        <span className="text-xs">{label}</span>
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <div className="p-1.5 rounded-full bg-muted">
+          {icon}
+        </div>
+        <span className="text-sm font-medium">{label}</span>
       </div>
-      <div className={`text-2xl font-bold ${getScoreColor(score)}`}>{score}</div>
-      <div className="text-xs text-muted-foreground">{weight} weight</div>
+      <div>
+        <div className="flex items-baseline gap-1.5">
+          <span className={`text-2xl font-bold ${getScoreColor(score)}`}>{score}</span>
+          <span className="text-xs text-muted-foreground font-medium">/ 100</span>
+        </div>
+        <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden mt-1.5">
+          <div
+            className={`h-full rounded-full ${score >= 70 ? 'bg-success' :
+                score >= 45 ? 'bg-chart-3' :
+                  'bg-destructive'
+              }`}
+            style={{ width: `${score}%` }}
+          />
+        </div>
+      </div>
     </div>
   );
 }

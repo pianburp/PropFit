@@ -23,7 +23,7 @@ export default function ProtectedError({ error, reset }: ErrorProps) {
   useEffect(() => {
     // Log the error to an error reporting service
     console.error('Protected route error:', error);
-    
+
     // Show toast notification
     toast.error('Something went wrong', {
       description: 'An error occurred while loading this page.',
@@ -32,14 +32,15 @@ export default function ProtectedError({ error, reset }: ErrorProps) {
         onClick: () => reset(),
       },
     });
-  }, [error, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error]);
 
   return (
     <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 p-4">
       <p className="text-muted-foreground text-center max-w-md">
         Something went wrong. Please try again or go back to the previous page.
       </p>
-      
+
       <div className="flex gap-2">
         <Button onClick={reset} variant="default" size="sm">
           <RefreshCw className="mr-2 h-4 w-4" />
@@ -49,7 +50,7 @@ export default function ProtectedError({ error, reset }: ErrorProps) {
           Go Back
         </Button>
       </div>
-      
+
       {error.digest && (
         <p className="text-xs text-muted-foreground">
           Error ID: {error.digest}

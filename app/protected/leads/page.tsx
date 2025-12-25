@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getLeads } from '@/lib/actions';
 import { LeadList } from '@/components/leads/lead-list';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Calendar } from 'lucide-react';
 
 export default async function LeadsPage() {
   const supabase = await createClient();
@@ -18,10 +18,10 @@ export default async function LeadsPage() {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b">
         <div>
-          <h1 className="text-2xl font-bold">Leads</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight">Leads Database</h1>
+          <p className="text-muted-foreground mt-1">
             Manage and qualify your property leads
           </p>
         </div>

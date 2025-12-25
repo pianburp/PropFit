@@ -15,6 +15,7 @@ import {
     TrendingUp,
     Home,
     DollarSign,
+    AlertCircle,
 } from 'lucide-react';
 
 interface UpgradeSummaryCompactProps {
@@ -22,21 +23,34 @@ interface UpgradeSummaryCompactProps {
 }
 
 export function UpgradeSummaryCompact({ lead }: UpgradeSummaryCompactProps) {
+    // Calculate monthly income from the range
+    const monthlyIncome = lead.current_income || ((lead.monthly_income_min + lead.monthly_income_max) / 2);
+    
+    // Get current property value from either current_property_value or purchase price
+    const currentPropertyValue = lead.current_property_value || lead.current_property_purchase_price;
+    
+    // Calculate existing commitments
+    const existingCommitments = lead.existing_loan_commitment_percent
+        ? monthlyIncome * (lead.existing_loan_commitment_percent / 100)
+        : 0;
+
     const analysis = analyzeUpgrade({
-        monthlyNetIncome: lead.current_income || (lead.monthly_income_min + lead.monthly_income_max) / 2,
-        existingMonthlyCommitments:
-            lead.existing_loan_commitment_percent
-                ? (lead.current_income || 0) * (lead.existing_loan_commitment_percent / 100)
-                : 0,
+        monthlyNetIncome: monthlyIncome,
+        existingMonthlyCommitments: existingCommitments,
         currentAge: 35,
-        currentPropertyValue: lead.current_property_value,
-        outstandingLoanBalance: lead.outstanding_loan_balance,
+        currentPropertyValue: currentPropertyValue,
+        outstandingLoanBalance: lead.outstanding_loan_balance || 0,
         currentMonthlyInstallment: 0,
         isUpgradingFirstHome: lead.is_first_time_buyer === false,
         interestRateProfile: 'conservative',
     });
 
     const whyNowPoints = getCompactWhyNowSummary(lead);
+    
+    // Check if we have enough data for meaningful display
+    const hasIncomeData = monthlyIncome > 0;
+    const hasCurrentProperty = !!currentPropertyValue;
+    const hasUpgradeBudget = lead.budget_max > 0;
 
     return (
         <div className="w-full max-w-md mx-auto bg-background p-4 space-y-4">
@@ -59,57 +73,58 @@ export function UpgradeSummaryCompact({ lead }: UpgradeSummaryCompactProps) {
                         <div className="text-center flex-1">
                             <p className="text-xs text-muted-foreground">Current</p>
                             <p className="font-bold">
-                                {lead.current_property_value
-                                    ? formatRM(lead.current_property_value)
+                                {hasCurrentProperty
+                                    ? formatRM(currentPropertyValue!)
                                     : '—'}
                             </p>
                         </div>
                         <ArrowRight className="w-5 h-5 text-muted-foreground" />
                         <div className="text-center flex-1">
-                            <p className="text-xs text-muted-foreground">Upgrade</p>
+                            <p className="text-xs text-muted-foreground">Target Budget</p>
                             <p className="font-bold text-primary">
-                                {formatRM(analysis.affordability.conservativePropertyPrice)}
+                                {hasUpgradeBudget 
+                                    ? formatRM(lead.budget_max)
+                                    : hasIncomeData 
+                                        ? formatRM(analysis.affordability.conservativePropertyPrice)
+                                        : '—'}
                             </p>
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            {/* Monthly Commitment */}
+            {/* Monthly Commitment / Financial Overview */}
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-sm flex items-center gap-2">
                         <DollarSign className="w-4 h-4" />
-                        Monthly Commitment
+                        Financial Overview
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                    <div className="flex items-center justify-between gap-3">
-                        <div className="text-center flex-1">
-                            <p className="text-xs text-muted-foreground">Current</p>
-                            <p className="font-bold">
-                                {analysis.currentMonthlyCommitment > 0
-                                    ? formatRM(analysis.currentMonthlyCommitment)
-                                    : '—'}
-                            </p>
+                    {hasIncomeData ? (
+                        <div className="space-y-3">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Monthly Income</span>
+                                <span className="font-medium">{formatRM(monthlyIncome)}</span>
+                            </div>
+                            {lead.existing_loan_commitment_percent && lead.existing_loan_commitment_percent > 0 && (
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Existing Commitments</span>
+                                    <span className="font-medium">{lead.existing_loan_commitment_percent}%</span>
+                                </div>
+                            )}
+                            <div className="flex justify-between text-sm border-t pt-2">
+                                <span className="text-muted-foreground">Est. New Monthly</span>
+                                <span className="font-bold text-primary">
+                                    {formatRM(analysis.affordability.conservativeMonthlyInstallment)}
+                                </span>
+                            </div>
                         </div>
-                        <ArrowRight className="w-5 h-5 text-muted-foreground" />
-                        <div className="text-center flex-1">
-                            <p className="text-xs text-muted-foreground">After Upgrade</p>
-                            <p className="font-bold">
-                                {formatRM(analysis.newMonthlyCommitment)}
-                            </p>
-                        </div>
-                    </div>
-                    {analysis.monthlyDifference !== 0 && analysis.currentMonthlyCommitment > 0 && (
-                        <div className="mt-3 text-center">
-                            <Badge
-                                variant={analysis.monthlyDifference > 0 ? 'secondary' : 'default'}
-                                className="text-sm"
-                            >
-                                {analysis.monthlyDifference > 0 ? '+' : ''}
-                                {formatRM(analysis.monthlyDifference)}/month
-                            </Badge>
+                    ) : (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <AlertCircle className="w-4 h-4" />
+                            <span>Income data required for analysis</span>
                         </div>
                     )}
                 </CardContent>
@@ -124,11 +139,17 @@ export function UpgradeSummaryCompact({ lead }: UpgradeSummaryCompactProps) {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0 space-y-1">
-                    {whyNowPoints.map((point, index) => (
-                        <p key={index} className="text-sm">
-                            {point}
+                    {whyNowPoints.length > 0 ? (
+                        whyNowPoints.map((point, index) => (
+                            <p key={index} className="text-sm">
+                                {point}
+                            </p>
+                        ))
+                    ) : (
+                        <p className="text-sm text-muted-foreground">
+                            Add more lead details to generate upgrade justifications.
                         </p>
-                    ))}
+                    )}
                 </CardContent>
             </Card>
 
@@ -148,7 +169,7 @@ export function UpgradeSummaryCompact({ lead }: UpgradeSummaryCompactProps) {
 
             {/* Disclaimer */}
             <p className="text-[10px] text-muted-foreground text-center pt-2 border-t">
-                Estimates based on conservative assumptions. Actual approval subject to bank assessment.
+                Lead Qualification Platform for Malaysia Real Estate Agents
             </p>
         </div>
     );
