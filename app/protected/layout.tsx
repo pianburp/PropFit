@@ -1,6 +1,7 @@
 import { ProtectedSidebar } from "@/components/layout/protected-sidebar";
 import { AuthButton } from "@/components/auth/auth-button";
 import { Suspense } from "react";
+import { ProtectedLoading } from "@/components/layout/protected-loading";
 
 export default function ProtectedLayout({
   children,
@@ -15,7 +16,9 @@ export default function ProtectedLayout({
         </Suspense>
       }
     >
-      {children}
+      <Suspense fallback={<ProtectedLoading />}>
+        {children}
+      </Suspense>
     </ProtectedSidebar>
   );
 }

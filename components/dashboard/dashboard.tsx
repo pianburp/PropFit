@@ -15,9 +15,11 @@ import {
   CITY_LABELS,
   QUALIFICATION_STATUS_COLORS,
   QUALIFICATION_STATUS_LABELS,
+  WINDOW_CLOSING_REASON_LABELS,
   type City,
 } from '@/lib/types';
 import { dismissAlert } from '@/lib/actions';
+import { formatRM } from '@/lib/qualification-engine';
 import {
   Users,
   CheckCircle,
@@ -28,6 +30,13 @@ import {
   Bell,
   X,
   ArrowRight,
+  DollarSign,
+  Clock,
+  Target,
+  Calendar,
+  Home,
+  Percent,
+  AlertCircle,
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -37,6 +46,190 @@ interface DashboardProps {
 export function Dashboard({ stats }: DashboardProps) {
   return (
     <div className="space-y-6">
+      {/* Upgrade Opportunity Summary (NEW) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/20">
+                <DollarSign className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">{formatRM(stats.total_upgrade_opportunity_value || 0)}</div>
+                <div className="text-xs text-muted-foreground">Pipeline Value</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-success/10 to-success/5 border-success/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-success/20">
+                <TrendingUp className="w-5 h-5 text-success" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">{formatRM(stats.estimated_double_commission || 0)}</div>
+                <div className="text-xs text-muted-foreground">Est. Commission</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-chart-4/10 to-chart-4/5 border-chart-4/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-chart-4/20">
+                <Target className="w-5 h-5 text-chart-4" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">{(stats.window_open_count || 0) + (stats.planning_count || 0)}</div>
+                <div className="text-xs text-muted-foreground">Active Opportunities</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-chart-3/10 to-chart-3/5 border-chart-3/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-chart-3/20">
+                <Percent className="w-5 h-5 text-chart-3" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold">{(stats.conversion_rate_window_to_executed || 0).toFixed(0)}%</div>
+                <div className="text-xs text-muted-foreground">Conversion Rate</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Timing Intelligence Section (NEW) */}
+      {((stats.clients_approaching_equity_threshold && stats.clients_approaching_equity_threshold.length > 0) || 
+        (stats.lease_endings_next_90_days && stats.lease_endings_next_90_days.length > 0) || 
+        (stats.high_income_growth_clients && stats.high_income_growth_clients.length > 0)) && (
+        <Card className="border-chart-4/30 bg-chart-4/5">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-chart-4" />
+              <CardTitle>Timing Intelligence</CardTitle>
+            </div>
+            <CardDescription>Clients approaching key upgrade triggers</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Approaching Equity Threshold */}
+              {stats.clients_approaching_equity_threshold && stats.clients_approaching_equity_threshold.length > 0 && (
+                <div className="p-4 rounded-lg bg-background border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Home className="w-4 h-4 text-primary" />
+                    <span className="font-medium text-sm">Approaching 20% Equity</span>
+                    <Badge variant="secondary">{stats.clients_approaching_equity_threshold.length}</Badge>
+                  </div>
+                  <div className="space-y-2">
+                    {stats.clients_approaching_equity_threshold.slice(0, 3).map(client => (
+                      <Link 
+                        key={client.id} 
+                        href={`/protected/leads/${client.id}`}
+                        className="block text-sm hover:underline truncate"
+                      >
+                        {client.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Lease Endings */}
+              {stats.lease_endings_next_90_days && stats.lease_endings_next_90_days.length > 0 && (
+                <div className="p-4 rounded-lg bg-background border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Calendar className="w-4 h-4 text-chart-3" />
+                    <span className="font-medium text-sm">Lease Ending (90 days)</span>
+                    <Badge variant="secondary">{stats.lease_endings_next_90_days.length}</Badge>
+                  </div>
+                  <div className="space-y-2">
+                    {stats.lease_endings_next_90_days.slice(0, 3).map(client => (
+                      <Link 
+                        key={client.id} 
+                        href={`/protected/leads/${client.id}`}
+                        className="block text-sm hover:underline truncate"
+                      >
+                        {client.name}
+                        {client.lease_end_date && (
+                          <span className="text-muted-foreground ml-1">
+                            ({new Date(client.lease_end_date).toLocaleDateString('en-MY', { month: 'short', day: 'numeric' })})
+                          </span>
+                        )}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* High Income Growth */}
+              {stats.high_income_growth_clients && stats.high_income_growth_clients.length > 0 && (
+                <div className="p-4 rounded-lg bg-background border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <TrendingUp className="w-4 h-4 text-success" />
+                    <span className="font-medium text-sm">High Income Growth (&gt;15%)</span>
+                    <Badge variant="secondary">{stats.high_income_growth_clients.length}</Badge>
+                  </div>
+                  <div className="space-y-2">
+                    {stats.high_income_growth_clients.slice(0, 3).map(client => (
+                      <Link 
+                        key={client.id} 
+                        href={`/protected/leads/${client.id}`}
+                        className="block text-sm hover:underline truncate"
+                      >
+                        {client.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Window Closing Alerts (NEW) */}
+      {stats.window_closing_alerts && stats.window_closing_alerts.length > 0 && (
+        <Card className="border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/20">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <CardTitle className="text-amber-900 dark:text-amber-100">Window Closing Alerts</CardTitle>
+              </div>
+              <Badge variant="outline" className="border-amber-400 text-amber-700 dark:text-amber-300">
+                {stats.window_closing_alerts.length} alert{stats.window_closing_alerts.length !== 1 ? 's' : ''}
+              </Badge>
+            </div>
+            <CardDescription>Upgrade opportunities that may be at risk</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {stats.window_closing_alerts.map((alert) => (
+                <div key={alert.lead_id} className="flex items-start gap-3 p-3 bg-background rounded-lg border border-amber-200 dark:border-amber-800">
+                  <div className="flex-1">
+                    <div className="font-medium">{alert.lead_name}</div>
+                    <p className="text-sm text-muted-foreground">{alert.description}</p>
+                    <Badge variant="outline" className="mt-2 text-xs">
+                      {WINDOW_CLOSING_REASON_LABELS[alert.reason]}
+                    </Badge>
+                  </div>
+                  <Button asChild size="sm" variant="secondary">
+                    <Link href={`/protected/leads/${alert.lead_id}`}>Review</Link>
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <StatCard

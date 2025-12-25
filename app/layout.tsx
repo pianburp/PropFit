@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { TRPCProvider } from "@/lib/trpc/provider";
+import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -36,6 +37,7 @@ export default function RootLayout({
         >
           <TRPCProvider>
             {children}
+            <Toaster />
           </TRPCProvider>
         </ThemeProvider>
       </body>

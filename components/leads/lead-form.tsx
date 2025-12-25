@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -24,14 +25,23 @@ import {
   INCOME_RANGES,
   RENT_BUDGET_RANGES,
   BUY_BUDGET_RANGES,
+  PROPERTY_TYPE_LABELS,
+  FAMILY_ALIGNMENT_LABELS,
+  LIFE_MILESTONE_LABELS,
+  UPGRADE_INTENT_LABELS,
   type City,
   type Intent,
   type MoveInTimeline,
   type EmploymentType,
+  type PropertyType,
+  type FamilyAlignmentStatus,
+  type LifeMilestoneType,
+  type UpgradeIntentSignal,
   type Lead,
   type CreateLeadInput,
 } from '@/lib/types';
 import { AREAS_BY_CITY } from '@/lib/areas';
+import { Home, Users, Sparkles, TrendingUp } from 'lucide-react';
 
 interface LeadFormProps {
   lead?: Lead;
@@ -73,9 +83,56 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
   const [leaseEndDate, setLeaseEndDate] = useState(lead?.lease_end_date || '');
   const [notes, setNotes] = useState(lead?.notes || '');
 
+  // NEW: Current Property fields (for upgrade analysis)
+  const [currentPropertyType, setCurrentPropertyType] = useState<PropertyType | ''>(
+    lead?.current_property_type || ''
+  );
+  const [currentPropertyLocation, setCurrentPropertyLocation] = useState(
+    lead?.current_property_location || ''
+  );
+  const [currentPropertyCity, setCurrentPropertyCity] = useState<City | ''>(
+    lead?.current_property_city || ''
+  );
+  const [currentPropertyPurchaseYear, setCurrentPropertyPurchaseYear] = useState(
+    lead?.current_property_purchase_year?.toString() || ''
+  );
+  const [currentPropertyPurchasePrice, setCurrentPropertyPurchasePrice] = useState(
+    lead?.current_property_purchase_price?.toString() || ''
+  );
+
+  // NEW: Family Alignment
+  const [familyAlignmentStatus, setFamilyAlignmentStatus] = useState<FamilyAlignmentStatus | ''>(
+    lead?.family_alignment_status || ''
+  );
+  const [familyAlignmentNotes, setFamilyAlignmentNotes] = useState(
+    lead?.family_alignment_notes || ''
+  );
+  const [coApplicantIncome, setCoApplicantIncome] = useState(
+    lead?.co_applicant_income?.toString() || ''
+  );
+
+  // NEW: Life Milestone (Upgrade Trigger)
+  const [pendingMilestone, setPendingMilestone] = useState<LifeMilestoneType | ''>('');
+  const [pendingMilestoneDate, setPendingMilestoneDate] = useState('');
+  const [pendingMilestoneNotes, setPendingMilestoneNotes] = useState('');
+
+  // NEW: Upgrade Intent Signals
+  const [upgradeIntentSignals, setUpgradeIntentSignals] = useState<UpgradeIntentSignal[]>(
+    lead?.upgrade_intent_signals || []
+  );
+  const [upgradeTargetPropertyType, setUpgradeTargetPropertyType] = useState<PropertyType | ''>(
+    lead?.upgrade_target_property_type || ''
+  );
+
   const handleAreaToggle = (area: string) => {
     setPreferredAreas((prev) =>
       prev.includes(area) ? prev.filter((a) => a !== area) : [...prev, area]
+    );
+  };
+
+  const handleIntentSignalToggle = (signal: UpgradeIntentSignal) => {
+    setUpgradeIntentSignals((prev) =>
+      prev.includes(signal) ? prev.filter((s) => s !== signal) : [...prev, signal]
     );
   };
 
@@ -108,6 +165,23 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
         is_first_time_buyer: firstTimeBuyer,
         lease_end_date: leaseEndDate || undefined,
         notes: notes || undefined,
+        // NEW: Current Property
+        current_property_type: currentPropertyType || undefined,
+        current_property_location: currentPropertyLocation || undefined,
+        current_property_city: currentPropertyCity || undefined,
+        current_property_purchase_year: currentPropertyPurchaseYear ? parseInt(currentPropertyPurchaseYear) : undefined,
+        current_property_purchase_price: currentPropertyPurchasePrice ? parseInt(currentPropertyPurchasePrice) : undefined,
+        // NEW: Family Alignment
+        family_alignment_status: familyAlignmentStatus || undefined,
+        family_alignment_notes: familyAlignmentNotes || undefined,
+        co_applicant_income: coApplicantIncome ? parseInt(coApplicantIncome) : undefined,
+        // NEW: Upgrade Intent
+        upgrade_intent_signals: upgradeIntentSignals.length > 0 ? upgradeIntentSignals : undefined,
+        upgrade_target_property_type: upgradeTargetPropertyType || undefined,
+        // NEW: Life Milestone
+        pending_life_milestone: pendingMilestone || undefined,
+        pending_life_milestone_date: pendingMilestoneDate || undefined,
+        pending_life_milestone_notes: pendingMilestoneNotes || undefined,
       };
 
       let result;
@@ -394,6 +468,272 @@ export function LeadForm({ lead, mode }: LeadFormProps) {
             <strong>Note:</strong> This is a self-declared financing readiness indicator, not a bank credit report.
             Final loan approval depends on the bank&apos;s assessment.
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Current Property (Upgrade Analysis) */}
+      <Card className="border-chart-4/30">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Home className="w-5 h-5 text-chart-4" />
+            <div>
+              <CardTitle>Current Property</CardTitle>
+              <CardDescription>Essential for accurate upgrade readiness analysis</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Property Type</Label>
+              <Select value={currentPropertyType} onValueChange={(v) => setCurrentPropertyType(v as PropertyType)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select property type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(PROPERTY_TYPE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>City</Label>
+              <Select value={currentPropertyCity} onValueChange={(v) => setCurrentPropertyCity(v as City)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select city" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CITY_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="currentPropertyLocation">Location / Project Name</Label>
+            <Input
+              id="currentPropertyLocation"
+              value={currentPropertyLocation}
+              onChange={(e) => setCurrentPropertyLocation(e.target.value)}
+              placeholder="e.g., Setia Alam, Kota Damansara, Mont Kiara"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="currentPropertyPurchaseYear">Year Purchased</Label>
+              <Input
+                id="currentPropertyPurchaseYear"
+                type="number"
+                min="1990"
+                max={new Date().getFullYear()}
+                value={currentPropertyPurchaseYear}
+                onChange={(e) => setCurrentPropertyPurchaseYear(e.target.value)}
+                placeholder="e.g., 2018"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="currentPropertyPurchasePrice">Original Purchase Price (RM)</Label>
+              <Input
+                id="currentPropertyPurchasePrice"
+                type="number"
+                min="0"
+                value={currentPropertyPurchasePrice}
+                onChange={(e) => setCurrentPropertyPurchasePrice(e.target.value)}
+                placeholder="e.g., 450000"
+              />
+            </div>
+          </div>
+
+          <div className="bg-muted/50 p-3 rounded text-sm text-muted-foreground">
+            💡 This data enables accurate equity calculations and upgrade affordability analysis.
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Family Alignment (Critical for Upgrade Deals) */}
+      <Card className="border-primary/30">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Users className="w-5 h-5 text-primary" />
+            <div>
+              <CardTitle>Family & Decision Makers</CardTitle>
+              <CardDescription>#1 factor in upgrade deal success</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Family Alignment Status</Label>
+              <Select value={familyAlignmentStatus} onValueChange={(v) => setFamilyAlignmentStatus(v as FamilyAlignmentStatus)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(FAMILY_ALIGNMENT_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="coApplicantIncome">Co-Applicant / Spouse Income (RM)</Label>
+              <Input
+                id="coApplicantIncome"
+                type="number"
+                min="0"
+                value={coApplicantIncome}
+                onChange={(e) => setCoApplicantIncome(e.target.value)}
+                placeholder="Monthly income if joint application"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="familyAlignmentNotes">Notes on Family Situation</Label>
+            <Textarea
+              id="familyAlignmentNotes"
+              value={familyAlignmentNotes}
+              onChange={(e) => setFamilyAlignmentNotes(e.target.value)}
+              placeholder="e.g., Spouse prefers landed, parents advising to wait..."
+              rows={2}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Life Milestone (Upgrade Trigger) */}
+      <Card className="border-success/30">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-success" />
+            <div>
+              <CardTitle>Life Milestone</CardTitle>
+              <CardDescription>Upcoming event that may trigger upgrade need</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Upcoming Milestone</Label>
+              <Select value={pendingMilestone} onValueChange={(v) => setPendingMilestone(v as LifeMilestoneType)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select milestone (if any)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">None</SelectItem>
+                  {Object.entries(LIFE_MILESTONE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pendingMilestoneDate">Expected Date</Label>
+              <Input
+                id="pendingMilestoneDate"
+                type="date"
+                value={pendingMilestoneDate}
+                onChange={(e) => setPendingMilestoneDate(e.target.value)}
+                disabled={!pendingMilestone}
+              />
+            </div>
+          </div>
+
+          {pendingMilestone && (
+            <div className="space-y-2">
+              <Label htmlFor="pendingMilestoneNotes">Details</Label>
+              <Input
+                id="pendingMilestoneNotes"
+                value={pendingMilestoneNotes}
+                onChange={(e) => setPendingMilestoneNotes(e.target.value)}
+                placeholder="e.g., First child expected in March, will need extra room..."
+              />
+            </div>
+          )}
+
+          <div className="bg-success/10 p-3 rounded text-sm text-success">
+            🎯 Life milestones are powerful upgrade triggers. Tracking them helps you reach out at the perfect moment.
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Upgrade Intent Signals */}
+      <Card className="border-chart-4/30">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-chart-4" />
+            <div>
+              <CardTitle>Upgrade Intent Signals</CardTitle>
+              <CardDescription>What has the client mentioned about upgrading?</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            <Label>Client has mentioned (select all that apply):</Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {Object.entries(UPGRADE_INTENT_LABELS).map(([value, label]) => (
+                <div
+                  key={value}
+                  className={`flex items-center space-x-2 p-2 rounded border cursor-pointer transition-colors ${
+                    upgradeIntentSignals.includes(value as UpgradeIntentSignal)
+                      ? 'bg-chart-4/10 border-chart-4'
+                      : 'border-input hover:bg-muted'
+                  }`}
+                  onClick={() => handleIntentSignalToggle(value as UpgradeIntentSignal)}
+                >
+                  <Checkbox
+                    checked={upgradeIntentSignals.includes(value as UpgradeIntentSignal)}
+                    onCheckedChange={() => handleIntentSignalToggle(value as UpgradeIntentSignal)}
+                  />
+                  <span className="text-sm">{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {upgradeIntentSignals.length > 0 && (
+            <div className="space-y-2">
+              <Label>Target Property Type</Label>
+              <Select value={upgradeTargetPropertyType} onValueChange={(v) => setUpgradeTargetPropertyType(v as PropertyType)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="What type are they looking to upgrade to?" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(PROPERTY_TYPE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {upgradeIntentSignals.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              <span className="text-sm text-muted-foreground">Signals captured:</span>
+              {upgradeIntentSignals.map((signal) => (
+                <Badge key={signal} variant="secondary" className="bg-chart-4/20">
+                  {UPGRADE_INTENT_LABELS[signal]}
+                </Badge>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 

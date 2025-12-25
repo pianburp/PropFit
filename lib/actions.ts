@@ -349,6 +349,30 @@ export async function changeUpgradeStage(
   }
 }
 
+export async function markLeadAsLost(
+  leadId: string,
+  lostReason: string,
+  lostNotes?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const context = await getServiceContext();
+    if (!context) return { success: false, error: 'Not authenticated' };
+
+    const pipelineService = new PipelineService(context.supabase);
+    await pipelineService.markAsLost(
+      { leadId, lostReason, lostNotes },
+      context.ctx
+    );
+
+    revalidatePath(`/protected/leads/${leadId}`);
+    revalidatePath('/protected/pipeline');
+    revalidatePath('/protected');
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
 export async function getClientsByUpgradeStage(): Promise<Record<UpgradeStage, Lead[]>> {
   const defaultGrouped: Record<UpgradeStage, Lead[]> = {
     monitoring: [],

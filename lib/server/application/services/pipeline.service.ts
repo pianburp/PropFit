@@ -328,4 +328,49 @@ export class PipelineService {
       notes: planData.advisory_notes,
     });
   }
+
+  /**
+   * Mark a lead as lost in the upgrade pipeline
+   */
+  async markAsLost(
+    input: { leadId: string; lostReason: string; lostNotes?: string },
+    ctx: PipelineServiceContext
+  ): Promise<void> {
+    const { leadId, lostReason, lostNotes } = input;
+    
+    const existingLead = await this.getLeadWithAccess(leadId, ctx);
+    const previousStage = existingLead.upgrade_stage || 'monitoring';
+    const now = new Date().toISOString();
+
+    // Update lead with lost status
+    await this.leadRepo.update(leadId, {
+      upgrade_stage: 'lost',
+      lost_reason: lostReason,
+      lost_reason_notes: lostNotes,
+      lost_at: now,
+    });
+
+    // Record stage history
+    await this.stageHistoryRepo.create({
+      lead_id: leadId,
+      from_stage: previousStage,
+      to_stage: 'lost',
+      changed_by: ctx.userId,
+      reason: lostReason,
+      notes: lostNotes,
+    });
+
+    // Log event
+    await this.eventRepo.createAsync({
+      lead_id: leadId,
+      agent_id: ctx.userId,
+      event_type: 'upgrade_stage_changed',
+      event_data: {
+        from_stage: previousStage,
+        to_stage: 'lost',
+        lost_reason: lostReason,
+      },
+      notes: lostNotes,
+    });
+  }
 }
